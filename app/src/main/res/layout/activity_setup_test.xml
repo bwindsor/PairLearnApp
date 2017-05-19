@@ -4,19 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.github.bwindsor.pairlearnapp.HomeActivity">
+    tools:context="com.github.bwindsor.pairlearnapp.SetupTestActivity">
 
     <Button
-        android:id="@+id/home_button_test"
+        android:id="@+id/setup_test_button_go"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
-        android:onClick="StartTestSetup"
-        android:text="@string/test_button_text"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:onClick="StartTest"
+        android:text="@string/go_button_text"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintRight_toRightOf="parent" />
 </android.support.constraint.ConstraintLayout>

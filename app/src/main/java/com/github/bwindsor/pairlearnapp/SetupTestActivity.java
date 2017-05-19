@@ -5,17 +5,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
-public class HomeActivity extends AppCompatActivity {
+public class SetupTestActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_setup_test);
     }
 
-    /** Called when the user taps the test me button */
-    public void StartTestSetup(View view) {
-        Intent intent = new Intent(this, SetupTestActivity.class);
+    /** Called when the user taps the go button */
+    public void StartTest(View view) {
+        Intent intent = new Intent(this, TestActivity.class);
         startActivity(intent);
     }
 }
