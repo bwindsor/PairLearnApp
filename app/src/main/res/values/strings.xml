@@ -1,8 +1,10 @@
 <resources>
-    <string name="app_name">PairLearnApp</string>
+    <string name="app_name">Pair Learn</string>
     <string name="test_button_text">Test Me</string>
     <string name="go_button_text">Go</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="correct_button_text">Correct</string>
+    <string name="incorrect_button_text">Wrong</string>
+    <string name="home_title">Pair Learn</string>
+    <string name="test_setup_title">Setup Test</string>
+    <string name="test_title">Testing</string>
 </resources>

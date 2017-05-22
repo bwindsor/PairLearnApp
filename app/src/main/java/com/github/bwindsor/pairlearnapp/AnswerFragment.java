@@ -7,27 +7,23 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link AnswerFragment.OnFragmentInteractionListener} interface
+ * {@link OnAnswerButtonPressedListener} interface
  * to handle interaction events.
  * Use the {@link AnswerFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class AnswerFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_ANSWER_TEXT = "answerText";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String mAnswerText;
 
-    private OnFragmentInteractionListener mListener;
+    private OnAnswerButtonPressedListener mListener;
 
     public AnswerFragment() {
         // Required empty public constructor
@@ -37,16 +33,13 @@ public class AnswerFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param answerText Parameter 1.
      * @return A new instance of fragment AnswerFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static AnswerFragment newInstance(String param1, String param2) {
+    public static AnswerFragment newInstance(String answerText) {
         AnswerFragment fragment = new AnswerFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_ANSWER_TEXT, answerText);
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,8 +48,7 @@ public class AnswerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mAnswerText = getArguments().getString(ARG_ANSWER_TEXT);
         }
     }
 
@@ -64,24 +56,34 @@ public class AnswerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_answer, container, false);
-    }
+        View v = inflater.inflate(R.layout.fragment_answer, container, false);
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+        TextView t = (TextView) v.findViewById(R.id.answer_text);
+        t.setText(mAnswerText);
+
+        return v;
+    }
+/*
+    public void onCorrectButtonPressed(View view) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onCorrectButtonPressed(view);
         }
     }
 
+    public void onWrongButtonPressed(View view) {
+        if (mListener != null) {
+            mListener.onWrongButtonPressed(view);
+        }
+    }
+*/
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnAnswerButtonPressedListener) {
+            mListener = (OnAnswerButtonPressedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnQuestionFinishedListener");
         }
     }
 
@@ -101,8 +103,9 @@ public class AnswerFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    public interface OnAnswerButtonPressedListener {
+        void onCorrectButtonPressed(View view);
+        void onWrongButtonPressed(View view);
     }
+
 }
