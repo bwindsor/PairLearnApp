@@ -31,31 +31,16 @@ public class TestDataSource {
      * @param testConfig - The test configuration
      * @return void
      */
-    public void init(TestConfig testConfig, Context context) {
-        /*
-        for(int i = 0; i < 2; i++ ){
-            mPairs.add(new Pair<String, String>("a" + i,"b" + i));
-        }
-*/
+    public void init(TestConfig testConfig) {
 
-        AssetManager assetManager = context.getAssets();
-        try {
-            InputStream csvStream = assetManager.open("words.csv");
-            String[] lines = getAllLinesFromInputStream(csvStream);
-            csvStream.close();
+        WordsDataSource w = WordsDataSource.getDataSource();
 
-            for (int i = 0; i < lines.length; i++) {
-                String[] parts = lines[i].split(",");
-                for (int j = 0; j < parts.length; j++) {
-                    parts[j] = parts[j].trim();
-                }
-                if (testConfig.hasCategory(parts[0])) {
-                    Pair<String, String> p = new Pair<>(parts[1], parts[2]);
-                    mPairs.add(p);
-                }
+        List<String> categories = w.getCategories();
+        List<Pair<String,String>> pairs = w.getWordPairs();
+        for (int i = 0; i < categories.size(); i++) {
+            if (testConfig.hasCategory(categories.get(i))) {
+                mPairs.add(pairs.get(i));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         // Put pairs in random order
@@ -94,12 +79,4 @@ public class TestDataSource {
         return false;
     }
 
-    private static String[] getAllLinesFromInputStream(InputStream inputStream) throws IOException
-    {
-        String s = "";
-        while (inputStream.available() > 0) {
-            s += (char) inputStream.read();
-        }
-        return s.split("\r?\n");
-    }
 }

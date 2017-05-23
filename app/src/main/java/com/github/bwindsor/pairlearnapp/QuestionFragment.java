@@ -130,5 +130,6 @@ public class QuestionFragment extends Fragment {
      */
     public interface OnQuestionFinishedListener {
         void onQuestionFinished();
+        void onContinueClicked(View view);
     }
 }

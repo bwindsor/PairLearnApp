@@ -6,11 +6,9 @@ package com.github.bwindsor.pairlearnapp;
 
 public class TestConfig {
     private int mMaxCorrect;
-    private int mQuestionTimeout;
     private String[] mCategories;
 
-    public TestConfig(String[] categories, int maxCorrect, int questionTimeout) {
-        this.mQuestionTimeout = questionTimeout;
+    public TestConfig(String[] categories, int maxCorrect) {
         this.mMaxCorrect = maxCorrect;
         this.mCategories = categories;
     }
@@ -27,10 +25,5 @@ public class TestConfig {
             }
         }
         return false;
-    }
-
-    public int getQuestionTimeout()
-    {
-        return this.mQuestionTimeout;
     }
 }

@@ -11,6 +11,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        WordsDataSource.init(getApplicationContext());
     }
 
     /** Called when the user taps the test me button */

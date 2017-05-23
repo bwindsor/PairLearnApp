@@ -9,18 +9,28 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".HomeActivity" android:label="@string/home_title">
+        <activity
+            android:name=".HomeActivity"
+            android:label="@string/home_title"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SetupTestActivity"
-                  android:parentActivityName=".HomeActivity"
-                  android:label="@string/test_setup_title"/>
-        <activity android:name=".TestActivity"
-                  android:parentActivityName=".SetupTestActivity"
-                  android:label="@string/test_title"/>
+        <activity
+            android:name=".SetupTestActivity"
+            android:label="@string/test_setup_title"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:parentActivityName=".HomeActivity" />
+        <activity
+            android:name=".TestActivity"
+            android:label="@string/test_title"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:parentActivityName=".SetupTestActivity" />
+        <activity android:name=".CategorySelectionActivity"></activity>
     </application>
 
 </manifest>
