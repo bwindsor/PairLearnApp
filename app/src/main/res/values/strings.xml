@@ -13,4 +13,12 @@
     <string name="dialog_no_words_selected_message">No words were selected</string>
     <string name="dialog_no_words_selected_title">No words selected</string>
     <string name="button_continue">Continue</string>
+    <string name="edit_vocab_button">Edit Vocabulary</string>
+    <string name="button_import_csv">Import CSV</string>
+    <string name="dialog_import_failed_message">CSV Import failed</string>
+    <string name="dialog_import_failed_title">Import CSV</string>
+    <string name="category_picker_title">Pick categories</string>
+    <string name="category_open_title">Select category to edit</string>
+    <string name="dialog_initial_data_read_failed_title">Data read failed</string>
+    <string name="dialog_initial_data_read_failed_message">Failed to read vocabulary data. The application will exit.</string>
 </resources>

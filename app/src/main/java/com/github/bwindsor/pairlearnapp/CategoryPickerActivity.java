@@ -13,9 +13,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
-public class CategorySelectionActivity extends AppCompatActivity {
+public class CategoryPickerActivity extends AppCompatActivity {
     public final static String EXTRA_SELECTED_CATEGORIES = "selectedCategories";
 
     private List<String> mCategoryStrings;
@@ -24,7 +23,7 @@ public class CategorySelectionActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category_selection);
+        setContentView(R.layout.activity_category_picker);
 
         ListView lv = (ListView) findViewById(R.id.cat_select_list);
         mCategoryStrings = WordsDataSource.getDataSource().getUniqueCategories();

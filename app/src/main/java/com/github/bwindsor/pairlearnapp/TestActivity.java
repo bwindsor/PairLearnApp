@@ -16,6 +16,7 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
     public static final String EXTRA_QUESTION_TIMEOUT = "questionTimeout";
     public static final String EXTRA_CATEGORIES = "categoriesSelected";
     public static final String EXTRA_MAX_CORRECT = "maxCorrect";
+    public static final String EXTRA_LEFT_TO_RIGHT = "leftToRight";
 
     private TestDataSource mTestDataSource;
     private long mTimeLimitSeconds;
@@ -28,7 +29,8 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
         Intent intent = getIntent();
         TestConfig config = new TestConfig(
                 intent.getStringArrayExtra(EXTRA_CATEGORIES),
-                intent.getIntExtra(EXTRA_MAX_CORRECT, 10)
+                intent.getIntExtra(EXTRA_MAX_CORRECT, 10),
+                intent.getBooleanExtra(EXTRA_LEFT_TO_RIGHT, false)
         );
 
         // Create the data source

@@ -7,11 +7,15 @@ package com.github.bwindsor.pairlearnapp;
 public class TestConfig {
     private int mMaxCorrect;
     private String[] mCategories;
+    private boolean mTestRightToLeft;
 
-    public TestConfig(String[] categories, int maxCorrect) {
+    public TestConfig(String[] categories, int maxCorrect, boolean testRightToLeft) {
         this.mMaxCorrect = maxCorrect;
         this.mCategories = categories;
+        this.mTestRightToLeft = testRightToLeft;
     }
+
+    public boolean getIsRightToLeft() { return mTestRightToLeft; }
 
     public int getMaxCorrect()
     {

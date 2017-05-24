@@ -11,9 +11,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".HomeActivity"
-            android:label="@string/home_title"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            >
+            android:label="@string/home_title">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,15 +21,24 @@
         </activity>
         <activity
             android:name=".SetupTestActivity"
-            android:label="@string/test_setup_title"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/test_setup_title"
             android:parentActivityName=".HomeActivity" />
         <activity
             android:name=".TestActivity"
-            android:label="@string/test_title"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/test_title"
             android:parentActivityName=".SetupTestActivity" />
-        <activity android:name=".CategorySelectionActivity"></activity>
+        <activity
+            android:name=".CategoryPickerActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/category_picker_title" />
+        <activity
+            android:name=".CategoryOpenActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/category_open_title"
+            android:parentActivityName=".HomeActivity" />
+        <activity android:name=".EditCategoryActivity"></activity>
     </application>
 
 </manifest>

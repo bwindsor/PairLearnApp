@@ -1,5 +1,26 @@
-X,a,b
-X,c,d
-X,e,f
-Y,g,h
-Y,i,j
+frequency, autes de, before
+frequency, després de, after
+frequency, todos los días, every day
+frequency, siempre, always
+frequency, muchas veces, many times
+frequency, normalmente, normally
+frequency, a menudo, often
+frequency, a veces, sometimes
+frequency, pocas veces, not often
+frequency, rara rez, rarely
+frequency, de vez en cuando, from time to time
+frequency, casi nunca, hardly ever
+frequency, nunca, never
+frequency, jamás, never (ever)
+frequency, nunca jamás, never (ever ever)
+frequency, dos veces a la semana, twice a week
+frequency, todos los fines de semana, every weekend
+days, el lunes, Monday
+days, el martes, Tuesday
+days, el miércoles, Wednesday
+days, el jueves, Thursday
+days, el viernes, Friday
+days, el sábado, Saturday
+days, el domingo, Sunday
+days, la semana, week
+days, los fines de samana, weekend

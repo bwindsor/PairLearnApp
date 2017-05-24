@@ -36,7 +36,7 @@ public class TestDataSource {
         WordsDataSource w = WordsDataSource.getDataSource();
 
         List<String> categories = w.getCategories();
-        List<Pair<String,String>> pairs = w.getWordPairs();
+        List<Pair<String,String>> pairs = testConfig.getIsRightToLeft() ? w.getReversedWordPairs() : w.getWordPairs();
         for (int i = 0; i < categories.size(); i++) {
             if (testConfig.hasCategory(categories.get(i))) {
                 mPairs.add(pairs.get(i));
