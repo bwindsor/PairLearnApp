@@ -21,4 +21,7 @@
     <string name="category_open_title">Select category to edit</string>
     <string name="dialog_initial_data_read_failed_title">Data read failed</string>
     <string name="dialog_initial_data_read_failed_message">Failed to read vocabulary data. The application will exit.</string>
+    <string name="dialog_edit_word_message">Enter the modified word</string>
+    <string name="dialog_edit_word_title">Modify word</string>
+    <string name="edit_category_title">Edit words</string>
 </resources>

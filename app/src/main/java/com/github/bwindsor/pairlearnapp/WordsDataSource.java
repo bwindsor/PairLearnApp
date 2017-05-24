@@ -3,6 +3,7 @@ package com.github.bwindsor.pairlearnapp;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.util.Pair;
 
 import java.io.BufferedReader;
@@ -13,26 +14,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Created by Ben on 23/05/2017.
  */
 
 public class WordsDataSource {
-    private List<String> mCategories = new ArrayList<String>();
-    private List<String> mLeftWords = new ArrayList<String>();
-    private List<String> mRightWords = new ArrayList<String>();
+    private List<String> mCategories = new ArrayList<>();
+    private List<String> mLeftWords = new ArrayList<>();
+    private List<String> mRightWords = new ArrayList<>();
+
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
     private Context mContext;
     private boolean mIsInitialised = false;
     private static final String WORDS_CSV_FILE = "words.csv";
     private static final int CSV_NUM_COLS = 3;
     private static final String CSV_COL_SEP = ",";
-    private static final String CSV_WRITE_NEW_LINE = "\n";
     private static final String WORDS_CSV_ENCODING = "UTF-8";
 
     private int mNumRows() { return mCategories.size(); }
@@ -73,9 +77,42 @@ public class WordsDataSource {
     }
 
     public List<String> getUniqueCategories() {
-        ArrayList<String> c = new ArrayList<String>(new HashSet<>(mCategories));
+        ArrayList<String> c;
+        readWriteLock.readLock().lock();
+        try {
+            c = new ArrayList<>(new HashSet<>(mCategories));
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
         Collections.sort(c);
         return c;
+    }
+
+    /**
+     * Gets a list of strings with interleave left and right words for a requested category
+     * @param categoryName
+     * @return
+     */
+    public List<String> getInterleavedWordListInCategory(String categoryName) {
+        List<String> words = new ArrayList<>();
+        readWriteLock.readLock().lock();
+        try {
+            for (int i = 0; i < mNumRows(); i++) {
+                if (mCategories.get(i).compareToIgnoreCase(categoryName) == 0) {
+                    words.add(mLeftWords.get(i));
+                    words.add(mRightWords.get(i));
+                }
+            }
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
+        return words;
+    }
+    public void setInterleavedWordListForCategory(String categoryName, List<String> interleavedWords) {
+        removeCategory(categoryName);
+        for (int i = 0; i < interleavedWords.size(); i+=2) {
+            addIfUnique(categoryName, interleavedWords.get(i), interleavedWords.get(i+1));
+        }
     }
 
     public List<String> getCategories() {
@@ -89,23 +126,29 @@ public class WordsDataSource {
     }
     public List<Pair<String,String>> getWordPairs() {
         List<Pair<String,String>> p = new ArrayList<Pair<String,String>>();
-        for (int i = 0; i < mNumRows(); i++) {
-            p.add(new Pair<String,String>(mLeftWords.get(i), mRightWords.get(i)));
+        readWriteLock.readLock().lock();
+        try {
+            for (int i = 0; i < mNumRows(); i++) {
+                p.add(new Pair<String, String>(mLeftWords.get(i), mRightWords.get(i)));
+            }
+        } finally {
+            readWriteLock.readLock().unlock();
         }
         return p;
     }
     public List<Pair<String,String>> getReversedWordPairs() {
-        List<Pair<String,String>> p = new ArrayList<Pair<String,String>>();
-        for (int i = 0; i < mNumRows(); i++) {
-            p.add(new Pair<String,String>(mRightWords.get(i), mLeftWords.get(i)));
+        List<Pair<String, String>> p = new ArrayList<>();
+        readWriteLock.readLock().lock();
+        try {
+            for (int i = 0; i < mNumRows(); i++) {
+                p.add(new Pair<String, String>(mRightWords.get(i), mLeftWords.get(i)));
+            }
+        } finally {
+            readWriteLock.readLock().unlock();
         }
         return p;
     }
-    public void addPair(String categoryName, Pair<String,String> pair) {
-        mCategories.add(categoryName);
-        mLeftWords.add(pair.first);
-        mRightWords.add(pair.second);
-    }
+
     public void importCsvFromUri(Uri uri) throws IOException {
         InputStream inputStream = mContext.getContentResolver().openInputStream(uri);
         if (inputStream == null) {
@@ -125,45 +168,99 @@ public class WordsDataSource {
                 for (int j = 0; j < parts.length; j++) {
                     parts[j] = parts[j].trim();
                 }
-                // categories will always be read as lower case
-                String category = parts[0].toLowerCase();
                 // Only add row if it is unique
-                if (!hasRow(category, parts[1], parts[2])) {
-                    mCategories.add(category);
-                    mLeftWords.add(parts[1]);
-                    mRightWords.add(parts[2]);
-                }
+                addIfUnique(parts[0], parts[1], parts[2]);
             } else if (parts.length != 0) {
                 throw new IOException();
             }
         }
     }
+    public void removeCategory(String categoryName) {
+        readWriteLock.writeLock().lock();
+        try {
+            // We need to do the loop backwards since the list gets shorter as we remove stuff
+            for (int i = mNumRows() - 1; i >= 0; i--) {
+                if (mCategories.get(i).compareToIgnoreCase(categoryName) == 0) {
+                    mCategories.remove(i);
+                    mLeftWords.remove(i);
+                    mRightWords.remove(i);
+                }
+            }
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
+    private void addIfUnique(String categoryName, String leftWord, String rightWord) {
+        readWriteLock.writeLock().lock();
+        try {
+            if (!hasRow(categoryName.toLowerCase(), leftWord, rightWord)) {
+                mCategories.add(categoryName.toLowerCase());
+                mLeftWords.add(leftWord);
+                mRightWords.add(rightWord);
+            }
+        } finally {
+            readWriteLock.writeLock().unlock();
+        }
+    }
 
     private boolean hasRow(String category, String leftWord, String rightWord) {
-        for (int i = 0; i < mNumRows(); i++) {
-            if (mCategories.get(i).compareTo(category) == 0 &&
-                    mLeftWords.get(i).compareTo(leftWord) == 0 &&
-                    mRightWords.get(i).compareTo(rightWord) == 0) {
-                return true;
+        boolean b = false;
+        readWriteLock.readLock().lock();
+        try {
+            for (int i = 0; i < mNumRows(); i++) {
+                if (mCategories.get(i).compareTo(category) == 0 &&
+                        mLeftWords.get(i).compareTo(leftWord) == 0 &&
+                        mRightWords.get(i).compareTo(rightWord) == 0) {
+                    b = true;
+                    break;
+                }
             }
+        } finally {
+            readWriteLock.readLock().unlock();
         }
-        return false;
+        return b;
     }
 
     public static void save() throws IOException {
         WordsDataSource w = WordsDataSource.getDataSource();
         w._save();
     }
+    public static void saveAsync() {
+        WordsDataSource w = WordsDataSource.getDataSource();
+        w._saveAsync();
+    }
+
+    private void _saveAsync() {
+        new SaveDataTask().execute();
+    }
 
     private void _save() throws IOException {
         FileOutputStream fos = mContext.openFileOutput(WORDS_CSV_FILE, Context.MODE_PRIVATE);
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fos, WORDS_CSV_ENCODING));
-        for (int i = 0; i < mNumRows(); i++) {
-            String s = mCategories.get(i) + CSV_COL_SEP + mLeftWords.get(i) + CSV_COL_SEP + mRightWords.get(i);
-            out.write(s);
-            out.newLine();
+
+        readWriteLock.readLock().lock();
+        try {
+            for (int i = 0; i < mNumRows(); i++) {
+                String s = mCategories.get(i) + CSV_COL_SEP + mLeftWords.get(i) + CSV_COL_SEP + mRightWords.get(i);
+                out.write(s);
+                out.newLine();
+            }
+        } finally {
+            readWriteLock.readLock().unlock();
         }
         out.close();
+    }
+
+    private class SaveDataTask extends AsyncTask<Void, Void, Integer> {
+
+        protected Integer doInBackground(Void... voids) {
+            try {
+                instance._save();
+            } catch (IOException e) {
+                // TODO - notify user that save failed
+            }
+            return 0;
+        }
     }
 
     public static void delete() {

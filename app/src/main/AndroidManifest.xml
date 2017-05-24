@@ -38,7 +38,10 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/category_open_title"
             android:parentActivityName=".HomeActivity" />
-        <activity android:name=".EditCategoryActivity"></activity>
+        <activity android:name=".EditCategoryActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/edit_category_title"
+            android:parentActivityName=".CategoryOpenActivity"></activity>
     </application>
 
 </manifest>
