@@ -24,4 +24,8 @@
     <string name="dialog_edit_word_message">Enter the modified word</string>
     <string name="dialog_edit_word_title">Modify word</string>
     <string name="edit_category_title">Edit words</string>
+    <string name="add_button_text">+</string>
+    <string name="dialog_add_category_title">Add category</string>
+    <string name="default_right_word">right</string>
+    <string name="default_left_word">left</string>
 </resources>

@@ -1,17 +1,27 @@
 package com.github.bwindsor.pairlearnapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CategoryOpenActivity extends AppCompatActivity {
+    private List<String> mCategoryNames;
+    private ArrayAdapter<String> mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,9 +29,9 @@ public class CategoryOpenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_category_open);
 
         ListView lv = (ListView) findViewById(R.id.cat_open_list);
-        List<String> categoryStrings = WordsDataSource.getDataSource().getUniqueCategories();
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, categoryStrings);
-        lv.setAdapter(adapter);
+        mCategoryNames = WordsDataSource.getDataSource().getUniqueCategories();
+        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mCategoryNames);
+        lv.setAdapter(mAdapter);
 
         final CategoryOpenActivity this_ = this;
         // Create a message handling object as an anonymous class.
@@ -38,5 +48,42 @@ public class CategoryOpenActivity extends AppCompatActivity {
         };
 
         lv.setOnItemClickListener(listClickedHandler);
+    }
+
+    public void onAddCategoryClick(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final EditText input = new EditText(this);
+
+        builder.setTitle(R.string.dialog_add_category_title)
+                .setView(input)
+                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Update the data we are working on
+                        String text = input.getText().toString();
+                        if (text.length() > 0) {
+                            mCategoryNames.add(text);
+                            WordsDataSource w = WordsDataSource.getDataSource();
+
+                            w.setInterleavedWordListForCategory(text, new ArrayList<String>(Arrays.asList(
+                                getResources().getString(R.string.default_left_word),
+                                getResources().getString(R.string.default_right_word)
+                            )));
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        }
+        dialog.show();
     }
 }
