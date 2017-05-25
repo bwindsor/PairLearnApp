@@ -7,6 +7,8 @@ import android.support.v4.util.ArraySet;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.util.Arrays;
@@ -18,28 +20,38 @@ public class SetupTestActivity extends AppCompatActivity {
     static final int SELECT_CATEGORY_REQUEST = 1;
 
     static final float DEFAULT_TIME_LIMIT_SECONDS = 2;
+    static final boolean DEFAULT_IS_REVERSE = false;
 
     private String[] mSelectedCategories = {};
-    private TextView mTimeInput;
+
+    private static class ViewCache {
+        TextView timeInput;
+        CheckBox reverseDirection;
+        Button selectCatButton;
+    }
+    private ViewCache mViewCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup_test);
 
-        mTimeInput = (TextView) findViewById(R.id.setup_test_time_input);
+        cacheViewItems();
 
         // Load preferences
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        setTimeLimit(sharedPref.getFloat(getString(R.string.saved_time_limit), DEFAULT_TIME_LIMIT_SECONDS));
-        setSelectedCategories(sharedPref.getStringSet(getString(R.string.saved_selected_categories),new HashSet<String>()));
+        loadPreferences();
     }
-
+    private void cacheViewItems() {
+        mViewCache = new ViewCache();
+        mViewCache.timeInput = (TextView) findViewById(R.id.setup_test_time_input);
+        mViewCache.reverseDirection = (CheckBox) findViewById(R.id.setup_test_reverse_direction);
+        mViewCache.selectCatButton = (Button) findViewById(R.id.setup_test_select_cat_button);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SELECT_CATEGORY_REQUEST) {
             if (resultCode == RESULT_OK) {
-                mSelectedCategories = data.getStringArrayExtra(CategoryPickerActivity.EXTRA_SELECTED_CATEGORIES);
+                setSelectedCategories(data.getStringArrayExtra(CategoryPickerActivity.EXTRA_SELECTED_CATEGORIES));
             }
         }
     }
@@ -59,8 +71,8 @@ public class SetupTestActivity extends AppCompatActivity {
 
         // TODO - implement UI for setting these things
         intent.putExtra(TestActivity.EXTRA_MAX_CORRECT, 2);
-        intent.putExtra(TestActivity.EXTRA_LEFT_TO_RIGHT, true);
 
+        intent.putExtra(TestActivity.EXTRA_LEFT_TO_RIGHT, getIsReverse());
         intent.putExtra(TestActivity.EXTRA_QUESTION_TIMEOUT, maxCorrect);
         intent.putExtra(TestActivity.EXTRA_CATEGORIES, mSelectedCategories);
 
@@ -80,6 +92,43 @@ public class SetupTestActivity extends AppCompatActivity {
         super.onStop();
 
         // Store preferences for next time
+        storePreferences();
+    }
+
+    protected float getTimeLimit() throws NumberFormatException {
+        float maxCorrect = Float.parseFloat(mViewCache.timeInput.getText().toString());
+        if (maxCorrect <= 0) { throw new NumberFormatException(); }
+        return maxCorrect;
+    }
+    protected void setTimeLimit(float timeLimit) {
+        mViewCache.timeInput.setText(String.valueOf(timeLimit));
+    }
+    protected Set<String> getCategorySet() {
+        return new HashSet<String>(Arrays.asList(mSelectedCategories));
+    }
+    protected void setSelectedCategories(Set<String> selectedCategories) {
+        setSelectedCategories(selectedCategories.toArray(new String[selectedCategories.size()]));
+    }
+    protected void setSelectedCategories(String[] selectedCategories) {
+        mSelectedCategories = selectedCategories;
+        mViewCache.selectCatButton.setText(getString(R.string.select_categories_button_text) + " (" + String.valueOf(selectedCategories.length) + ")");
+
+    }
+    protected boolean getIsReverse() {
+        return mViewCache.reverseDirection.isChecked();
+    }
+    protected void setIsReverse(boolean isReverse) {
+        mViewCache.reverseDirection.setChecked(isReverse);
+    }
+
+    protected void loadPreferences() {
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        setTimeLimit(sharedPref.getFloat(getString(R.string.saved_time_limit), DEFAULT_TIME_LIMIT_SECONDS));
+        setSelectedCategories(sharedPref.getStringSet(getString(R.string.saved_selected_categories),new HashSet<String>()));
+        setIsReverse(sharedPref.getBoolean(getString(R.string.saved_reverse_direction), DEFAULT_IS_REVERSE));
+    }
+
+    protected void storePreferences() {
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
@@ -91,23 +140,10 @@ public class SetupTestActivity extends AppCompatActivity {
             // Change text back to something sensible
             setTimeLimit(timeLimit);
         }
+
         editor.putFloat(getString(R.string.saved_time_limit), timeLimit);
         editor.putStringSet(getString(R.string.saved_selected_categories), getCategorySet());
+        editor.putBoolean(getString(R.string.saved_reverse_direction), getIsReverse());
         editor.apply();
-    }
-
-    protected float getTimeLimit() throws NumberFormatException {
-        float maxCorrect = Float.parseFloat(mTimeInput.getText().toString());
-        if (maxCorrect <= 0) { throw new NumberFormatException(); }
-        return maxCorrect;
-    }
-    protected void setTimeLimit(float timeLimit) {
-        mTimeInput.setText(String.valueOf(timeLimit));
-    }
-    protected Set<String> getCategorySet() {
-        return new HashSet<String>(Arrays.asList(mSelectedCategories));
-    }
-    protected void setSelectedCategories(Set<String> selectedCategories) {
-        mSelectedCategories = selectedCategories.toArray(new String[selectedCategories.size()]);
     }
 }

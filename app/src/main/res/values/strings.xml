@@ -44,4 +44,6 @@
     <string name="dialog_invalid_time_limit_title">Invalid time limit</string>
     <string name="saved_time_limit" translatable="false">com.github.bwindsor.pairlearnapp.saved_time_limit</string>
     <string name="saved_selected_categories" translatable="false">com.github.bwindsor.pairlearnapp.saved_selected_categories</string>
+    <string name="checkbox_reverse_direction">Reverse test direction</string>
+    <string name="saved_reverse_direction" translatable="false">com.github.bwindsor.pairlearnapp.saved_reverse_direction</string>
 </resources>
