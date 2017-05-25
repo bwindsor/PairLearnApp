@@ -47,6 +47,22 @@ public class CategoryPickerActivity extends AppCompatActivity {
         };
 
         lv.setOnItemClickListener(listClickedHandler);
+
+        // TODO - set initial states, but probably need custom adapter for this?
+        /*
+        // Set initial states
+        Intent intent = getIntent();
+        String[] selectedCategories = intent.getStringArrayExtra(EXTRA_SELECTED_CATEGORIES);
+        for (int i = 0; i < mCategoryStrings.size(); i++) {
+            for (int j = 0; j < selectedCategories.length; j++) {
+                if (mCategoryStrings.get(i).compareToIgnoreCase(selectedCategories[j]) == 0) {
+                    mSelectionStatus[i] = true;
+
+                    break;
+                }
+            }
+        }
+        */
     }
 
 

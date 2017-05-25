@@ -19,7 +19,7 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
     public static final String EXTRA_LEFT_TO_RIGHT = "leftToRight";
 
     private TestDataSource mTestDataSource;
-    private long mTimeLimitSeconds;
+    private float mTimeLimitSeconds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +34,7 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
         );
 
         // Create the data source
-        mTimeLimitSeconds = intent.getIntExtra(EXTRA_QUESTION_TIMEOUT, 3);
+        mTimeLimitSeconds = intent.getFloatExtra(EXTRA_QUESTION_TIMEOUT, 3);
 
         mTestDataSource = new TestDataSource();
         mTestDataSource.init(config);

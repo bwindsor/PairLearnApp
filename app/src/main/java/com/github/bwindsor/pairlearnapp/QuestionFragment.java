@@ -25,7 +25,7 @@ public class QuestionFragment extends Fragment {
     private static final String ARG_TIME_LIMIT = "timeLimit";
 
     private String mQuestionText;
-    private long mTimeLimitSeconds;
+    private float mTimeLimitSeconds;
 
     private OnQuestionFinishedListener mListener;
     private Timer mTimer;
@@ -42,11 +42,11 @@ public class QuestionFragment extends Fragment {
      * @param timeLimit Time limit, in seconds, for the question to display
      * @return A new instance of fragment QuestionFragment.
      */
-    public static QuestionFragment newInstance(String questionText, long timeLimit) {
+    public static QuestionFragment newInstance(String questionText, float timeLimit) {
         QuestionFragment fragment = new QuestionFragment();
         Bundle args = new Bundle();
         args.putString(ARG_QUESTION_TEXT, questionText);
-        args.putLong(ARG_TIME_LIMIT, timeLimit);
+        args.putFloat(ARG_TIME_LIMIT, timeLimit);
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,7 +56,7 @@ public class QuestionFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mQuestionText = getArguments().getString(ARG_QUESTION_TEXT);
-            mTimeLimitSeconds = getArguments().getLong(ARG_TIME_LIMIT);
+            mTimeLimitSeconds = getArguments().getFloat(ARG_TIME_LIMIT);
         }
     }
 
@@ -109,7 +109,7 @@ public class QuestionFragment extends Fragment {
                 onTimeUp();
             }
         };
-        this.mTimer.schedule(task, mTimeLimitSeconds * 1000);
+        this.mTimer.schedule(task, (int) (mTimeLimitSeconds * 1000));
     }
 
     @Override

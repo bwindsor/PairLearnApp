@@ -39,4 +39,9 @@
     <string name="button_export_csv">Export CSV</string>
     <string name="dialog_save_failed_message">Save failed</string>
     <string name="dialog_save_failed_title">Save failed</string>
+    <string name="time_limit_label">Time limit (seconds)</string>
+    <string name="dialog_invalid_time_limit_message">Time limit must be a positive number</string>
+    <string name="dialog_invalid_time_limit_title">Invalid time limit</string>
+    <string name="saved_time_limit" translatable="false">com.github.bwindsor.pairlearnapp.saved_time_limit</string>
+    <string name="saved_selected_categories" translatable="false">com.github.bwindsor.pairlearnapp.saved_selected_categories</string>
 </resources>

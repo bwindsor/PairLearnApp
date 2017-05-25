@@ -27,7 +27,8 @@
             android:name=".SetupTestActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/test_setup_title"
-            android:parentActivityName=".HomeActivity" />
+            android:parentActivityName=".HomeActivity"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".TestActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
