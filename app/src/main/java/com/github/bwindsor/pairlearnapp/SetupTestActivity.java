@@ -70,6 +70,7 @@ public class SetupTestActivity extends AppCompatActivity {
     /** Called when the user taps select categories button */
     public void SelectCategories(View view) {
         Intent intent = new Intent(this, CategoryPickerActivity.class);
+        intent.putExtra(CategoryPickerActivity.EXTRA_SELECTED_CATEGORIES, mSelectedCategories);
 
         startActivityForResult(intent, SELECT_CATEGORY_REQUEST);
     }
