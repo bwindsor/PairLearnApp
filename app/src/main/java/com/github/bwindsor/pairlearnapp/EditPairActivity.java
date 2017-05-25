@@ -3,6 +3,7 @@ package com.github.bwindsor.pairlearnapp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -35,14 +36,34 @@ public class EditPairActivity extends AppCompatActivity {
         setTitle(intent.getStringExtra(EXTRA_ACTIVITY_TITLE));
     }
 
+    // Override for the hardware back button being pressed
+    @Override
+    public void onBackPressed() {
+        setResult(RESULT_CANCELED);
+        super.onBackPressed();
+    }
+
+    // Override for the menu bar back button being pressed
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                setResult(RESULT_CANCELED);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     public void onOKClick(View view) {
         Intent data = new Intent();
 
         String leftText = mLeftTextView.getText().toString();
         String rightText = mRightTextView.getText().toString();
 
-        ValidateTextInput(leftText);
-        ValidateTextInput(rightText);
+        if (!ValidateTextInput(leftText)) { return; }
+        if (!ValidateTextInput(rightText)) { return; }
 
         data.putExtra(EXTRA_LEFT_WORD, leftText);
         data.putExtra(EXTRA_RIGHT_WORD, rightText);
@@ -56,13 +77,14 @@ public class EditPairActivity extends AppCompatActivity {
         finish();
     }
 
-    private void ValidateTextInput(String s) {
+    private boolean ValidateTextInput(String s) {
         // Cannot be empty
         if (s.length() == 0) {
             DialogHelper.ShowOKDialog(this,
                     R.string.dialog_string_empty_message,
                     R.string.dialog_string_empty_title
             );
+            return false;
         }
         // Cannot contain a comma
         if (s.contains(",")) {
@@ -70,6 +92,8 @@ public class EditPairActivity extends AppCompatActivity {
                     R.string.dialog_string_contains_comma_message,
                     R.string.dialog_string_contains_comma_title
             );
+            return false;
         }
+        return true;
     }
 }
