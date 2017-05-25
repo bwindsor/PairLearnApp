@@ -91,17 +91,15 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
     }
 
     private void showNoWordsDialogThenFinish() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_no_words_selected_message)
-                .setTitle(R.string.dialog_no_words_selected_title)
-                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+        DialogHelper.ShowOKDialog(this,
+                R.string.dialog_no_words_selected_message,
+                R.string.dialog_no_words_selected_title,
+                new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
                     }
                 });
-        AlertDialog dialog = builder.create();
-        dialog.show();
     }
 
 }

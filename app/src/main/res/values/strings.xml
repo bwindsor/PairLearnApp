@@ -26,6 +26,17 @@
     <string name="edit_category_title">Edit words</string>
     <string name="add_button_text">+</string>
     <string name="dialog_add_category_title">Add category</string>
-    <string name="default_right_word">right</string>
-    <string name="default_left_word">left</string>
+    <string name="default_right_word">word2</string>
+    <string name="default_left_word">word1</string>
+    <string name="left_word_label">Word 1</string>
+    <string name="right_word_label">Word 2</string>
+    <string name="edit_word_pair_title">Edit word pair</string>
+    <string name="dialog_string_empty_message">The value cannot be empty</string>
+    <string name="dialog_string_empty_title">Input empty</string>
+    <string name="dialog_string_contains_comma_message">Entries cannot contain commas</string>
+    <string name="dialog_string_contains_comma_title">Comma found</string>
+    <string name="add_word_pair_title">Add word pair</string>
+    <string name="button_export_csv">Export CSV</string>
+    <string name="dialog_save_failed_message">Save failed</string>
+    <string name="dialog_save_failed_title">Save failed</string>
 </resources>

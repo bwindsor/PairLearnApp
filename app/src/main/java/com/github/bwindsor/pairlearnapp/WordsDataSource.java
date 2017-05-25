@@ -8,11 +8,13 @@ import android.support.v4.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -223,20 +225,32 @@ public class WordsDataSource {
 
     public static void save() throws IOException {
         WordsDataSource w = WordsDataSource.getDataSource();
-        w._save();
+        w._save_internal();
     }
     public static void saveAsync() {
         WordsDataSource w = WordsDataSource.getDataSource();
         w._saveAsync();
+    }
+    public static void save(File file) throws IOException {
+        WordsDataSource w = WordsDataSource.getDataSource();
+        w._save_specified(file);
     }
 
     private void _saveAsync() {
         new SaveDataTask().execute();
     }
 
-    private void _save() throws IOException {
+    private void _save_internal() throws IOException {
         FileOutputStream fos = mContext.openFileOutput(WORDS_CSV_FILE, Context.MODE_PRIVATE);
-        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fos, WORDS_CSV_ENCODING));
+        _saveToOutputStream(fos);
+    }
+    private void _save_specified(File file) throws IOException {
+        FileOutputStream fos = new FileOutputStream(file);
+        _saveToOutputStream(fos);
+    }
+
+    private void _saveToOutputStream(OutputStream os) throws IOException {
+        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os, WORDS_CSV_ENCODING));
 
         readWriteLock.readLock().lock();
         try {
@@ -255,7 +269,7 @@ public class WordsDataSource {
 
         protected Integer doInBackground(Void... voids) {
             try {
-                instance._save();
+                instance._save_internal();
             } catch (IOException e) {
                 // TODO - notify user that save failed
             }

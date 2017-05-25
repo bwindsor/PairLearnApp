@@ -32,6 +32,8 @@ import java.util.List;
 public class EditCategoryActivity extends AppCompatActivity {
 
     public static final String EXTRA_CATEGORY_NAME = "categoryName";
+    public static final int EDIT_PAIR_REQUEST_CODE = 1;
+    public static final int ADD_PAIR_REQUEST_CODE = 2;
     private String mCategoryName;
     private List<String> mInterleavedWords;
     private ArrayAdapter<String> mAdapter;
@@ -124,36 +126,14 @@ public class EditCategoryActivity extends AppCompatActivity {
         AdapterView.OnItemClickListener listClickedHandler = new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView parent, View v, int position, long id) {
-                // In response to the click, open a dialog asking the user to edit the word
-                AlertDialog.Builder builder = new AlertDialog.Builder(this_);
-                final EditText input = new EditText(this_);
-                final int idx = position;
+                // In response to the click, start edit word activity
+                Intent intent = new Intent(this_, EditPairActivity.class);
+                intent.putExtra(EditPairActivity.EXTRA_LEFT_WORD, mInterleavedWords.get(position - position % 2));
+                intent.putExtra(EditPairActivity.EXTRA_RIGHT_WORD, mInterleavedWords.get(position - position % 2 + 1));
+                intent.putExtra(EditPairActivity.EXTRA_WORD_INDEX, position - position % 2);
+                intent.putExtra(EditPairActivity.EXTRA_ACTIVITY_TITLE, getResources().getString(R.string.edit_word_pair_title));
 
-                input.setText(mInterleavedWords.get(position));
-                input.setSelectAllOnFocus(true);
-
-                builder.setTitle(R.string.dialog_edit_word_title)
-                        .setView(input)
-                       .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // Update the data we are working on
-                                mInterleavedWords.set(idx, input.getText().toString());
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        })
-                        .setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
-                AlertDialog dialog = builder.create();
-                Window window = dialog.getWindow();
-                if (window != null) {
-                    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-                }
-                dialog.show();
+                startActivityForResult(intent, EDIT_PAIR_REQUEST_CODE);
 
             }
         };
@@ -174,8 +154,36 @@ public class EditCategoryActivity extends AppCompatActivity {
     }
 
     public void onAddButtonClick(View view) {
-        mInterleavedWords.add("newLeft");
-        mInterleavedWords.add("newRight");
-        mAdapter.notifyDataSetChanged();
+        Intent intent = new Intent(this, EditPairActivity.class);
+        intent.putExtra(EditPairActivity.EXTRA_LEFT_WORD, getResources().getString(R.string.default_left_word));
+        intent.putExtra(EditPairActivity.EXTRA_RIGHT_WORD, getResources().getString(R.string.default_right_word));
+        intent.putExtra(EditPairActivity.EXTRA_WORD_INDEX, mInterleavedWords.size());
+        intent.putExtra(EditPairActivity.EXTRA_ACTIVITY_TITLE, getResources().getString(R.string.add_word_pair_title));
+
+        startActivityForResult(intent, ADD_PAIR_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case EDIT_PAIR_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    String leftWord = data.getStringExtra(EditPairActivity.EXTRA_LEFT_WORD);
+                    String rightWord = data.getStringExtra(EditPairActivity.EXTRA_RIGHT_WORD);
+                    int index = data.getIntExtra(EditPairActivity.EXTRA_WORD_INDEX, 0);
+                    mInterleavedWords.set(index, leftWord);
+                    mInterleavedWords.set(index+1, rightWord);
+                    mAdapter.notifyDataSetChanged();
+                }
+                break;
+            case ADD_PAIR_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    mInterleavedWords.add(data.getStringExtra(EditPairActivity.EXTRA_LEFT_WORD));
+                    mInterleavedWords.add(data.getStringExtra(EditPairActivity.EXTRA_RIGHT_WORD));
+                    mAdapter.notifyDataSetChanged();
+                }
+            default:
+                break;
+        }
     }
 }
