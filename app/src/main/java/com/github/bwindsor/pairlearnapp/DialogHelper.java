@@ -7,9 +7,19 @@ import android.support.v7.app.AlertDialog;
 
 /**
  * Created by Ben on 25/05/2017.
+ * DialogHelper provides functionality to make it easier to display dialogs warning the user of
+ * something
  */
-
 public class DialogHelper {
+    /**
+     * Show a simple dialog with a message and an OK button
+     * @param context context in which the dialog is being created
+     * @param message message to display
+     * @param title title of the dialog box
+     * @param onClickListener listener interface with commands to run when the OK button is clicked.
+     *                        The dialog is always dismissed when OK is clicked, and any further
+     *                        commands are run before it is dismissed.
+     */
     public static void ShowOKDialog(Context context, String message, String title, final DialogInterface.OnClickListener onClickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(message)
@@ -25,6 +35,12 @@ public class DialogHelper {
         dialog.show();
     }
 
+    /**
+     * Show a simple dialog with a message and an OK button, which when OK is clicked it just closes
+     * @param context context in which the dialog is being created
+     * @param message message to display
+     * @param title title of the dialog box
+     */
     public static void ShowOKDialog(Context context, String message, String title) {
         ShowOKDialog(context, message, title, new DialogInterface.OnClickListener() {
             @Override

@@ -33,7 +33,7 @@ public class AnswerFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param answerText Parameter 1.
+     * @param answerText Text to display in the answer fragment.
      * @return A new instance of fragment AnswerFragment.
      */
     public static AnswerFragment newInstance(String answerText) {
@@ -67,6 +67,7 @@ public class AnswerFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        // Checks that the activity implements the listener interface
         if (context instanceof OnAnswerButtonPressedListener) {
             mListener = (OnAnswerButtonPressedListener) context;
         } else {

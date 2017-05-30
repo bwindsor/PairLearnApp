@@ -19,6 +19,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
+/**
+ * This activity allows the user to view existing categories and add new ones
+ */
 public class CategoryOpenActivity extends AppCompatActivity {
     private List<String> mCategoryNames;
     private ArrayAdapter<String> mAdapter;
@@ -28,6 +32,7 @@ public class CategoryOpenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_open);
 
+        // Set up a simple list view with a list of categories
         ListView lv = (ListView) findViewById(R.id.cat_open_list);
         mCategoryNames = WordsDataSource.getDataSource().getUniqueCategories();
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mCategoryNames);
@@ -50,10 +55,15 @@ public class CategoryOpenActivity extends AppCompatActivity {
         lv.setOnItemClickListener(listClickedHandler);
     }
 
+    /**
+     * This is the callback for when the add category button is clicked
+     * @param view
+     */
     public void onAddCategoryClick(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final EditText input = new EditText(this);
 
+        // Show a dialog asking the user for the name of the new category
         builder.setTitle(R.string.dialog_add_category_title)
                 .setView(input)
                 .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
@@ -66,8 +76,8 @@ public class CategoryOpenActivity extends AppCompatActivity {
                             WordsDataSource w = WordsDataSource.getDataSource();
 
                             w.setInterleavedWordListForCategory(text, new ArrayList<String>(Arrays.asList(
-                                getResources().getString(R.string.default_left_word),
-                                getResources().getString(R.string.default_right_word)
+                                    getString(R.string.default_left_word),
+                                    getString(R.string.default_right_word)
                             )));
                             mAdapter.notifyDataSetChanged();
                         }

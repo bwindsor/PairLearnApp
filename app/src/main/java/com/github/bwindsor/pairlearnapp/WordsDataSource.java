@@ -25,6 +25,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Created by Ben on 23/05/2017.
+ * This is a singleton class. It needs initialising with the application context when the
+ * application first starts running.
+ * This provides a layer between the data store on disk and the rest of the program.
+ * Data is currently stored in a CSV file but this should be changed to SQLLite at some point.
  */
 
 public class WordsDataSource {
@@ -78,6 +82,10 @@ public class WordsDataSource {
         mIsInitialised = true;
     }
 
+    /**
+     * Gets a list of unique category names
+     * @return list of unique category names
+     */
     public List<String> getUniqueCategories() {
         ArrayList<String> c;
         readWriteLock.readLock().lock();
@@ -92,8 +100,8 @@ public class WordsDataSource {
 
     /**
      * Gets a list of strings with interleave left and right words for a requested category
-     * @param categoryName
-     * @return
+     * @param categoryName the name of the category to get the words for
+     * @return list of interleaved words for this category
      */
     public List<String> getInterleavedWordListInCategory(String categoryName) {
         List<String> words = new ArrayList<>();
@@ -110,6 +118,13 @@ public class WordsDataSource {
         }
         return words;
     }
+
+    /**
+     * Sets the set of word pairs for a category from interleaved words
+     * @param categoryName the name of the category to set
+     * @param interleavedWords a list of interleaved word pairs for this category
+     */
+
     public void setInterleavedWordListForCategory(String categoryName, List<String> interleavedWords) {
         removeCategory(categoryName);
         for (int i = 0; i < interleavedWords.size(); i+=2) {
@@ -117,6 +132,11 @@ public class WordsDataSource {
         }
     }
 
+    /**
+     * Gets the complete list of categories for every word pair. Use getUniqueCategories to get the
+     * set of available categories.
+     * @return list of categories for each word pair in the data set
+     */
     public List<String> getCategories() {
         return mCategories;
     }
@@ -151,6 +171,11 @@ public class WordsDataSource {
         return p;
     }
 
+    /**
+     * Imports a CSV file from a specified location
+     * @param uri address of the file
+     * @throws IOException if it can't open the file or if the file format isn't valid
+     */
     public void importCsvFromUri(Uri uri) throws IOException {
         InputStream inputStream = mContext.getContentResolver().openInputStream(uri);
         if (inputStream == null) {
@@ -163,6 +188,7 @@ public class WordsDataSource {
         }
     }
 
+    // Parses the lines of a CSV file
     private void parseCsvLines(String[] lines) throws IOException {
         for (int i = 0; i < lines.length; i++) {
             String[] parts = lines[i].split(CSV_COL_SEP);
@@ -177,6 +203,7 @@ public class WordsDataSource {
             }
         }
     }
+    // Removes all word pairs for a given category
     public void removeCategory(String categoryName) {
         readWriteLock.writeLock().lock();
         try {
@@ -192,6 +219,7 @@ public class WordsDataSource {
             readWriteLock.writeLock().unlock();
         }
     }
+    // Adds a word pair if it doesn't already exist
     private void addIfUnique(String categoryName, String leftWord, String rightWord) {
         readWriteLock.writeLock().lock();
         try {
@@ -204,7 +232,7 @@ public class WordsDataSource {
             readWriteLock.writeLock().unlock();
         }
     }
-
+    // Checks if a row of data already exists
     private boolean hasRow(String category, String leftWord, String rightWord) {
         boolean b = false;
         readWriteLock.readLock().lock();
@@ -222,15 +250,22 @@ public class WordsDataSource {
         }
         return b;
     }
-
+    // Saves the data to file synchronously
     public static void save() throws IOException {
         WordsDataSource w = WordsDataSource.getDataSource();
         w._save_internal();
     }
+    // Saves the data to file asynchronously
     public static void saveAsync() {
         WordsDataSource w = WordsDataSource.getDataSource();
         w._saveAsync();
     }
+
+    /**
+     * Saves the data to a user specified CSV file asynchronously
+     * @param file file location to save to
+     * @throws IOException if the file cannot be saved
+     */
     public static void save(File file) throws IOException {
         WordsDataSource w = WordsDataSource.getDataSource();
         w._save_specified(file);
@@ -266,12 +301,12 @@ public class WordsDataSource {
     }
 
     private class SaveDataTask extends AsyncTask<Void, Void, Integer> {
-
         protected Integer doInBackground(Void... voids) {
             try {
                 instance._save_internal();
             } catch (IOException e) {
                 // TODO - notify user that save failed
+                DialogHelper.ShowOKDialog(mContext, R.string.dialog_save_failed_message, R.string.dialog_save_failed_title);
             }
             return 0;
         }

@@ -15,6 +15,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This activity is for the user to set up their test configuration. It stores the configuration in
+ * the android key/value store so that preferences are maintained for next time.
+ */
 public class SetupTestActivity extends AppCompatActivity {
 
     static final int SELECT_CATEGORY_REQUEST = 1;
@@ -69,7 +73,7 @@ public class SetupTestActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO - implement UI for setting these things
+        // TODO - implement UI for setting this
         intent.putExtra(TestActivity.EXTRA_MAX_CORRECT, 2);
 
         intent.putExtra(TestActivity.EXTRA_LEFT_TO_RIGHT, getIsReverse());
@@ -95,32 +99,40 @@ public class SetupTestActivity extends AppCompatActivity {
         storePreferences();
     }
 
+    // Gets the time limit from the UI
     protected float getTimeLimit() throws NumberFormatException {
         float maxCorrect = Float.parseFloat(mViewCache.timeInput.getText().toString());
         if (maxCorrect <= 0) { throw new NumberFormatException(); }
         return maxCorrect;
     }
+    // Sets the time limit display in the UI
     protected void setTimeLimit(float timeLimit) {
         mViewCache.timeInput.setText(String.valueOf(timeLimit));
     }
+    // Gets the currently selected set of categories
     protected Set<String> getCategorySet() {
         return new HashSet<String>(Arrays.asList(mSelectedCategories));
     }
+    // Sets the currently selected set of categories from a set
     protected void setSelectedCategories(Set<String> selectedCategories) {
         setSelectedCategories(selectedCategories.toArray(new String[selectedCategories.size()]));
     }
+    // Sets the currently selected set of categories from a string array
     protected void setSelectedCategories(String[] selectedCategories) {
         mSelectedCategories = selectedCategories;
         mViewCache.selectCatButton.setText(getString(R.string.select_categories_button_text) + " (" + String.valueOf(selectedCategories.length) + ")");
 
     }
+    // Gets whether the reverse direction checkbox is ticked
     protected boolean getIsReverse() {
         return mViewCache.reverseDirection.isChecked();
     }
+    // Sets whether the reverse direction checkbox is ticked
     protected void setIsReverse(boolean isReverse) {
         mViewCache.reverseDirection.setChecked(isReverse);
     }
 
+    // Loads the users preferences from android's Key/Value store
     protected void loadPreferences() {
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         setTimeLimit(sharedPref.getFloat(getString(R.string.saved_time_limit), DEFAULT_TIME_LIMIT_SECONDS));
@@ -128,6 +140,7 @@ public class SetupTestActivity extends AppCompatActivity {
         setIsReverse(sharedPref.getBoolean(getString(R.string.saved_reverse_direction), DEFAULT_IS_REVERSE));
     }
 
+    // Stores the users preferences from android's Key/Value store
     protected void storePreferences() {
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();

@@ -7,6 +7,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+/**
+ * This activity is for editing a pair of words. The user can enter/modify each of the words.
+ */
 public class EditPairActivity extends AppCompatActivity {
     public static final String EXTRA_LEFT_WORD = "leftWord";
     public static final String EXTRA_RIGHT_WORD = "rightWord";
@@ -27,12 +30,15 @@ public class EditPairActivity extends AppCompatActivity {
         String rightWord = intent.getStringExtra(EXTRA_RIGHT_WORD);
         mWordIndex = intent.getIntExtra(EXTRA_WORD_INDEX, 0);
 
+        // Cache handles to the view items
         mLeftTextView = (TextView) findViewById(R.id.edit_pair_left_input);
         mRightTextView = (TextView) findViewById(R.id.edit_pair_right_input);
 
+        // Set initial words as those passed into the activity
         mLeftTextView.setText(leftWord);
         mRightTextView.setText(rightWord);
 
+        // Set title as that passed in
         setTitle(intent.getStringExtra(EXTRA_ACTIVITY_TITLE));
     }
 
@@ -56,15 +62,20 @@ public class EditPairActivity extends AppCompatActivity {
         }
     }
 
+    // Callback for OK button being clicked
     public void onOKClick(View view) {
         Intent data = new Intent();
 
         String leftText = mLeftTextView.getText().toString();
         String rightText = mRightTextView.getText().toString();
 
+        /* Validate text inputs - this will display a message to the user if anything is invalid,
+        but this function must then return afterwards
+        */
         if (!ValidateTextInput(leftText)) { return; }
         if (!ValidateTextInput(rightText)) { return; }
 
+        // Validation was successful, so put extras in and return the result
         data.putExtra(EXTRA_LEFT_WORD, leftText);
         data.putExtra(EXTRA_RIGHT_WORD, rightText);
         data.putExtra(EXTRA_WORD_INDEX, mWordIndex);
