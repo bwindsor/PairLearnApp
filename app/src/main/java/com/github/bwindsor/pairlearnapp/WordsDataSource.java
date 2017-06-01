@@ -3,9 +3,12 @@ package com.github.bwindsor.pairlearnapp;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.provider.UserDictionary;
 import android.support.annotation.Nullable;
 import android.widget.CursorAdapter;
 
+import com.github.bwindsor.pairlearnapp.providers.WordsContentProvider;
 import com.github.bwindsor.pairlearnapp.providers.WordsContract;
 
 import java.util.List;
@@ -84,6 +87,19 @@ public class WordsDataSource {
                 null,
                 null,
                 null);
+    }
+    public static int getNumCategoriesInTest(Context context) {
+        Cursor c = context.getContentResolver().query(WordsContract.Categories.CONTENT_URI,
+                new String[] {"count(*) as count"},
+                WordsContract.Categories.IS_IN_TEST + "=1",
+                null,
+                null);
+        int count = 0;
+        if (c.moveToNext()) {
+            count = c.getInt(0);
+        }
+        c.close();
+        return count;
     }
     public static void addCategory(Context context, String categoryName) {
         ContentValues values = new ContentValues();

@@ -37,10 +37,16 @@ public class SetupTestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setup_test);
 
         cacheViewItems();
-
+        updateCategorySelectionButton();
         // Load preferences
         loadPreferences();
     }
+    private void updateCategorySelectionButton() {
+        int selCount = WordsDataSource.getNumCategoriesInTest(this);
+        mViewCache.selectCatButton.setText(getString(R.string.select_categories_button_text) +
+                " (" + String.valueOf(selCount) + ")");
+    }
+
     private void cacheViewItems() {
         mViewCache = new ViewCache();
         mViewCache.timeInput = (TextView) findViewById(R.id.setup_test_time_input);
@@ -74,6 +80,12 @@ public class SetupTestActivity extends AppCompatActivity {
     public void SelectCategories(View view) {
         Intent intent = new Intent(this, CategoryPickerActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateCategorySelectionButton();
     }
 
     @Override

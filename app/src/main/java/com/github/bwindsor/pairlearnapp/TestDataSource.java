@@ -45,7 +45,7 @@ public class TestDataSource {
         for (int i = 0; i < catIds.size(); i++) {
             catIdsInt[i] = catIds.get(i);
         }
-        mCursor = WordsDataSource.getPairs(context, catIdsInt);
+        mCursor = WordsDataSource.getPairs(context, catIdsInt, true);
         mIsReversed = testConfig.getIsRightToLeft();
     }
 
