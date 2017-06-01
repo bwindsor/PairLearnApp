@@ -2,6 +2,7 @@ package com.github.bwindsor.pairlearnapp;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,9 +12,13 @@ import android.view.WindowManager;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+
+import com.github.bwindsor.pairlearnapp.providers.WordsContract;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,8 +29,7 @@ import java.util.List;
  * This activity allows the user to view existing categories and add new ones
  */
 public class CategoryOpenActivity extends AppCompatActivity {
-    private List<String> mCategoryNames;
-    private ArrayAdapter<String> mAdapter;
+    private CursorAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,25 +38,9 @@ public class CategoryOpenActivity extends AppCompatActivity {
 
         // Set up a simple list view with a list of categories
         ListView lv = (ListView) findViewById(R.id.cat_open_list);
-        mCategoryNames = WordsDataSource.getDataSource().getUniqueCategories();
-        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mCategoryNames);
+        Cursor c = WordsDataSource.getCategories(getApplicationContext());
+        mAdapter = new CategoryOpenAdapter(this, c, 0);
         lv.setAdapter(mAdapter);
-
-        final CategoryOpenActivity this_ = this;
-        // Create a message handling object as an anonymous class.
-        AdapterView.OnItemClickListener listClickedHandler = new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView parent, View v, int position, long id) {
-                // In response to the click, start the edit category activity, passing the category
-                // name to be edited.
-                TextView textView = (TextView) v.findViewById(android.R.id.text1);
-                Intent intent = new Intent(this_, EditCategoryActivity.class);
-                intent.putExtra(EditCategoryActivity.EXTRA_CATEGORY_NAME, textView.getText());
-                startActivity(intent);
-            }
-        };
-
-        lv.setOnItemClickListener(listClickedHandler);
     }
 
     /**
@@ -62,6 +50,8 @@ public class CategoryOpenActivity extends AppCompatActivity {
     public void onAddCategoryClick(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final EditText input = new EditText(this);
+        // This makes the keyboard appear lower case
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 
         // Show a dialog asking the user for the name of the new category
         builder.setTitle(R.string.dialog_add_category_title)
@@ -72,14 +62,9 @@ public class CategoryOpenActivity extends AppCompatActivity {
                         // Update the data we are working on
                         String text = input.getText().toString();
                         if (text.length() > 0) {
-                            mCategoryNames.add(text);
-                            WordsDataSource w = WordsDataSource.getDataSource();
-
-                            w.setInterleavedWordListForCategory(text, new ArrayList<String>(Arrays.asList(
-                                    getString(R.string.default_left_word),
-                                    getString(R.string.default_right_word)
-                            )));
-                            mAdapter.notifyDataSetChanged();
+                            WordsDataSource.addCategory(getApplicationContext(), text);
+                            mAdapter.swapCursor(WordsDataSource.getCategories(getApplicationContext()));
+                            // mAdapter.notifyDataSetChanged();
                         }
                     }
                 })

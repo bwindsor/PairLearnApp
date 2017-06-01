@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.github.bwindsor.pairlearnapp.providers.CSVHelper;
+
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
 import net.rdrei.android.dirchooser.DirectoryChooserConfig;
 
@@ -31,6 +33,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         // Initialise singleton data source with the application context -
         // this will last for the lifetime of the application
+        /*
         try {
             WordsDataSource.init(getApplicationContext());
         } catch (IOException e) {
@@ -48,6 +51,7 @@ public class HomeActivity extends AppCompatActivity {
             AlertDialog dialog = builder.create();
             dialog.show();
         }
+        */
     }
 
     /** Called when the user taps the test me button */
@@ -99,10 +103,8 @@ public class HomeActivity extends AppCompatActivity {
                 if (resultCode == Activity.RESULT_OK) {
                     Uri uri = resultData.getData();
                     if (uri != null) {
-                        WordsDataSource w = WordsDataSource.getDataSource();
                         try {
-                            w.importCsvFromUri(uri);
-                            WordsDataSource.save();
+                            CSVHelper.importCsvFromUri(uri, getApplicationContext());
                         } catch (IOException e){
                             AlertDialog.Builder builder = new AlertDialog.Builder(this);
                             builder.setMessage(R.string.dialog_import_failed_message)
@@ -124,8 +126,9 @@ public class HomeActivity extends AppCompatActivity {
                 if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                     String dirName = resultData.getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
                     File file = new File(dirName, "words_export.csv");
+                    Uri uri = Uri.fromFile(file);
                     try {
-                        WordsDataSource.save(file);
+                        CSVHelper.exportCsvToUri(uri, getApplicationContext());
                     } catch (IOException e) {
                         DialogHelper.ShowOKDialog(this, R.string.dialog_save_failed_message, R.string.dialog_save_failed_title);
                     }

@@ -2,8 +2,11 @@ package com.github.bwindsor.pairlearnapp;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.support.v4.util.Pair;
 import android.util.Log;
+
+import com.github.bwindsor.pairlearnapp.providers.WordsContract;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,9 +23,8 @@ import java.util.List;
  */
 
 public class TestDataSource {
-
-    private List<Pair<String, String>> mPairs = new ArrayList<>();
-    private int mCurrentIdx = -1;
+    private Cursor mCursor;
+    private boolean mIsReversed;
 
     public void TestDataSource(){}
 
@@ -31,36 +33,41 @@ public class TestDataSource {
      * @param testConfig - The test configuration
      * @return void
      */
-    public void init(TestConfig testConfig) {
-
-        WordsDataSource w = WordsDataSource.getDataSource();
-
-        List<String> categories = w.getCategories();
-        List<Pair<String,String>> pairs = testConfig.getIsRightToLeft() ? w.getReversedWordPairs() : w.getWordPairs();
-        for (int i = 0; i < categories.size(); i++) {
-            if (testConfig.hasCategory(categories.get(i))) {
-                mPairs.add(pairs.get(i));
+    public void init(TestConfig testConfig, Context context) {
+        Cursor c = WordsDataSource.getCategories(context);
+        List<Integer> catIds = new ArrayList<>();
+        while (c.moveToNext()) {
+            if (c.getInt(c.getColumnIndex(WordsContract.Categories.IS_IN_TEST)) != 0) {
+                catIds.add(c.getInt(c.getColumnIndex(WordsContract.Categories.CATEGORY_ID)));
             }
         }
-
-        // Put pairs in random order
-        java.util.Collections.shuffle(mPairs);
-
-        mCurrentIdx = -1;
+        int[] catIdsInt = new int[catIds.size()];
+        for (int i = 0; i < catIds.size(); i++) {
+            catIdsInt[i] = catIds.get(i);
+        }
+        mCursor = WordsDataSource.getPairs(context, catIdsInt);
+        mIsReversed = testConfig.getIsRightToLeft();
     }
 
     public Pair<String, String> getNextPair() {
-        mCurrentIdx++;
-        if (mCurrentIdx >= mPairs.size()) {
+        if (mCursor.isAfterLast()) {
+            return null;
+        } else if (mCursor.moveToNext()) {
+            return getCurrentPair();
+        } else {
             return null;
         }
-        return mPairs.get(mCurrentIdx);
     }
     public Pair<String, String> getCurrentPair() {
-        if (mCurrentIdx < 0 || mCurrentIdx >= mPairs.size()) {
+        if (mCursor.isAfterLast() || mCursor.isBeforeFirst()) {
             return null;
+        } else if (mIsReversed) {
+            return new Pair<>(mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD2)),
+                              mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD1)));
+        } else {
+            return new Pair<>(mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD1)),
+                    mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD2)));
         }
-        return mPairs.get(mCurrentIdx);
     }
 
     public void reset() {

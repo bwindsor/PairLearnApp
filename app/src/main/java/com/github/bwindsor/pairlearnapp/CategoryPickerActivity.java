@@ -1,6 +1,7 @@
 package com.github.bwindsor.pairlearnapp;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -12,9 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CategoryPickerActivity extends AppCompatActivity {
-    public final static String EXTRA_SELECTED_CATEGORIES = "selectedCategories";
 
-    private List<String> mCategoryStrings;
     private CategoryPickerAdapter mAdapter;
 
     @Override
@@ -23,11 +22,10 @@ public class CategoryPickerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_category_picker);
 
         Intent intent = getIntent();
-        List<String> selectedCategories = Arrays.asList(intent.getStringArrayExtra(EXTRA_SELECTED_CATEGORIES));
 
         ListView lv = (ListView) findViewById(R.id.cat_select_list);
-        mCategoryStrings = WordsDataSource.getDataSource().getUniqueCategories();
-        mAdapter = new CategoryPickerAdapter(mCategoryStrings, selectedCategories, this);
+        Cursor c = WordsDataSource.getCategories(getApplicationContext());
+        mAdapter = new CategoryPickerAdapter(this, c, 0);
         lv.setAdapter(mAdapter);
 
         lv.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
@@ -36,16 +34,6 @@ public class CategoryPickerActivity extends AppCompatActivity {
 
 
     public void onDoneClick(View view) {
-        List<String> categories = new ArrayList<String>();
-        for (int i = 0; i < mCategoryStrings.size(); i++) {
-            if (mAdapter.getCheckedStatus(i)) {
-                categories.add(mCategoryStrings.get(i));
-            }
-        }
-
-        Intent data = new Intent();
-        data.putExtra(EXTRA_SELECTED_CATEGORIES, categories.toArray(new String[categories.size()]));
-        setResult(RESULT_OK, data);
         finish();
     }
 

@@ -63,9 +63,6 @@ public class TestSetupTestUI {
         // This is a bit silly. It's no good having data source as a singleton class because it
         // makes tests hard to implement. So I should probably change that. Also too much logic in
         // the activities, should be in separate java classes
-        List<String> cat = WordsDataSource.getDataSource().getUniqueCategories();
-        onView(withText(cat.get(0))).check(matches(not(isChecked())));
-        onView(withText(cat.get(0))).perform(click());
         onView(withId(R.id.cat_select_ok)).perform(click());
 
         // This clicks the 'go' button

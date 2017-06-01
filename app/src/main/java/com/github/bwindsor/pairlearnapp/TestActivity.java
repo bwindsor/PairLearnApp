@@ -14,7 +14,6 @@ import java.util.Timer;
 public class TestActivity extends AppCompatActivity implements QuestionFragment.OnQuestionFinishedListener, AnswerFragment.OnAnswerButtonPressedListener {
 
     public static final String EXTRA_QUESTION_TIMEOUT = "questionTimeout";
-    public static final String EXTRA_CATEGORIES = "categoriesSelected";
     public static final String EXTRA_MAX_CORRECT = "maxCorrect";
     public static final String EXTRA_LEFT_TO_RIGHT = "leftToRight";
 
@@ -28,7 +27,6 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
 
         Intent intent = getIntent();
         TestConfig config = new TestConfig(
-                intent.getStringArrayExtra(EXTRA_CATEGORIES),
                 intent.getIntExtra(EXTRA_MAX_CORRECT, 10),
                 intent.getBooleanExtra(EXTRA_LEFT_TO_RIGHT, false)
         );
@@ -37,7 +35,7 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
         mTimeLimitSeconds = intent.getFloatExtra(EXTRA_QUESTION_TIMEOUT, 3);
 
         mTestDataSource = new TestDataSource();
-        mTestDataSource.init(config);
+        mTestDataSource.init(config, getApplicationContext());
         Pair<String, String> p = mTestDataSource.getNextPair();
         if (p == null)
         {

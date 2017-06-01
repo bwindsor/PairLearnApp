@@ -21,12 +21,8 @@ import java.util.Set;
  */
 public class SetupTestActivity extends AppCompatActivity {
 
-    static final int SELECT_CATEGORY_REQUEST = 1;
-
     static final float DEFAULT_TIME_LIMIT_SECONDS = 2;
     static final boolean DEFAULT_IS_REVERSE = false;
-
-    private String[] mSelectedCategories = {};
 
     private static class ViewCache {
         TextView timeInput;
@@ -51,14 +47,6 @@ public class SetupTestActivity extends AppCompatActivity {
         mViewCache.reverseDirection = (CheckBox) findViewById(R.id.setup_test_reverse_direction);
         mViewCache.selectCatButton = (Button) findViewById(R.id.setup_test_select_cat_button);
     }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SELECT_CATEGORY_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                setSelectedCategories(data.getStringArrayExtra(CategoryPickerActivity.EXTRA_SELECTED_CATEGORIES));
-            }
-        }
-    }
 
     /** Called when the user taps the go button */
     public void StartTest(View view) {
@@ -78,7 +66,6 @@ public class SetupTestActivity extends AppCompatActivity {
 
         intent.putExtra(TestActivity.EXTRA_LEFT_TO_RIGHT, getIsReverse());
         intent.putExtra(TestActivity.EXTRA_QUESTION_TIMEOUT, maxCorrect);
-        intent.putExtra(TestActivity.EXTRA_CATEGORIES, mSelectedCategories);
 
         startActivity(intent);
     }
@@ -86,15 +73,12 @@ public class SetupTestActivity extends AppCompatActivity {
     /** Called when the user taps select categories button */
     public void SelectCategories(View view) {
         Intent intent = new Intent(this, CategoryPickerActivity.class);
-        intent.putExtra(CategoryPickerActivity.EXTRA_SELECTED_CATEGORIES, mSelectedCategories);
-
-        startActivityForResult(intent, SELECT_CATEGORY_REQUEST);
+        startActivity(intent);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
         // Store preferences for next time
         storePreferences();
     }
@@ -109,20 +93,6 @@ public class SetupTestActivity extends AppCompatActivity {
     protected void setTimeLimit(float timeLimit) {
         mViewCache.timeInput.setText(String.valueOf(timeLimit));
     }
-    // Gets the currently selected set of categories
-    protected Set<String> getCategorySet() {
-        return new HashSet<String>(Arrays.asList(mSelectedCategories));
-    }
-    // Sets the currently selected set of categories from a set
-    protected void setSelectedCategories(Set<String> selectedCategories) {
-        setSelectedCategories(selectedCategories.toArray(new String[selectedCategories.size()]));
-    }
-    // Sets the currently selected set of categories from a string array
-    protected void setSelectedCategories(String[] selectedCategories) {
-        mSelectedCategories = selectedCategories;
-        mViewCache.selectCatButton.setText(getString(R.string.select_categories_button_text) + " (" + String.valueOf(selectedCategories.length) + ")");
-
-    }
     // Gets whether the reverse direction checkbox is ticked
     protected boolean getIsReverse() {
         return mViewCache.reverseDirection.isChecked();
@@ -136,7 +106,6 @@ public class SetupTestActivity extends AppCompatActivity {
     protected void loadPreferences() {
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         setTimeLimit(sharedPref.getFloat(getString(R.string.saved_time_limit), DEFAULT_TIME_LIMIT_SECONDS));
-        setSelectedCategories(sharedPref.getStringSet(getString(R.string.saved_selected_categories),new HashSet<String>()));
         setIsReverse(sharedPref.getBoolean(getString(R.string.saved_reverse_direction), DEFAULT_IS_REVERSE));
     }
 
@@ -155,7 +124,6 @@ public class SetupTestActivity extends AppCompatActivity {
         }
 
         editor.putFloat(getString(R.string.saved_time_limit), timeLimit);
-        editor.putStringSet(getString(R.string.saved_selected_categories), getCategorySet());
         editor.putBoolean(getString(R.string.saved_reverse_direction), getIsReverse());
         editor.apply();
     }

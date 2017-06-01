@@ -1,43 +1,41 @@
 package com.github.bwindsor.pairlearnapp;
 
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.AsyncTask;
-import android.support.v4.util.Pair;
-import android.support.v7.app.AlertDialog;
+import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.ActionMode;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.GridView;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import java.io.IOException;
+import com.github.bwindsor.pairlearnapp.providers.WordsContract;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class EditCategoryActivity extends AppCompatActivity {
+public class EditCategoryActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    public static final String EXTRA_CATEGORY_NAME = "categoryName";
+    public static final String EXTRA_CATEGORY_ID = "categoryId";
     public static final int EDIT_PAIR_REQUEST_CODE = 1;
     public static final int ADD_PAIR_REQUEST_CODE = 2;
-    private String mCategoryName;
-    private List<String> mInterleavedWords;
-    private ArrayAdapter<String> mAdapter;
-    private GridView mGridView;
+    private int mCategoryId;
+    private Cursor mCursor;
+    private CursorAdapter mAdapter;
+    private ListView mListView;
+
+    private void refreshCursor() {
+        mCursor = WordsDataSource.getPairs(getApplicationContext(), mCategoryId);
+        if (mAdapter != null) {
+            mAdapter.changeCursor(mCursor);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,18 +43,21 @@ public class EditCategoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit_category);
 
         Intent intent = getIntent();
-        mCategoryName = intent.getStringExtra(EXTRA_CATEGORY_NAME);
+        mCategoryId = intent.getIntExtra(EXTRA_CATEGORY_ID, 0);
 
         // Display the category name in the activity title
-        this.setTitle(getResources().getString(R.string.edit_category_title) + ": " + mCategoryName);
+        Cursor c0 = WordsDataSource.getCategory(getApplicationContext(), mCategoryId);
+        c0.moveToFirst();
+        this.setTitle(getResources().getString(R.string.edit_category_title) + ": " + c0.getString(c0.getColumnIndex(WordsContract.Categories.NAME)));
 
-        mGridView = (GridView) findViewById(R.id.cat_edit_grid);
-        mInterleavedWords = WordsDataSource.getDataSource().getInterleavedWordListInCategory(mCategoryName);
-        mAdapter = new ArrayAdapter<String>(this, R.layout.grid_list_item, R.id.grid_list_text, mInterleavedWords);
-        mGridView.setAdapter(mAdapter);
+        mListView = (ListView) findViewById(R.id.cat_edit_list);
+        refreshCursor();
+        mAdapter = new EditCategoryAdapter(this, mCursor, 0);
+        mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(this);
 
-        mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
-        mGridView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+        mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             private List<Boolean> mIsSelected;
 
             @Override
@@ -86,10 +87,10 @@ public class EditCategoryActivity extends AppCompatActivity {
                 MenuInflater inflater = mode.getMenuInflater();
                 inflater.inflate(R.menu.edit_words_context_menu, menu);
                 mIsSelected = new ArrayList<>();
-                for (int i = 0; i < mInterleavedWords.size(); i++) {
+                int count = mCursor.getCount();
+                for (int i = 0; i < count; i++) {
                     mIsSelected.add(false);
                 }
-
                 return true;
             }
 
@@ -108,56 +109,42 @@ public class EditCategoryActivity extends AppCompatActivity {
             }
 
             private void deleteSelectedItems() {
-                for (int i = mIsSelected.size()-1; i >= 0; i-=2) {
-                    if (mIsSelected.get(i-1) || mIsSelected.get(i)) {
-                        mInterleavedWords.remove(i);
-                        mInterleavedWords.remove(i-1);
+                List<Integer> pairIdsToRemove = new ArrayList<>();
+                for (int i = 0; i < mIsSelected.size()-1; i++) {
+                    if (mIsSelected.get(i)) {
+                        mCursor.moveToPosition(i);
+                        pairIdsToRemove.add(mCursor.getInt(mCursor.getColumnIndex(WordsContract.Pairs.WORD_PAIR_ID)));
                     }
                 }
-                mAdapter.notifyDataSetChanged();
+                WordsDataSource.removePairs(EditCategoryActivity.this, pairIdsToRemove);
+                refreshCursor();
             }
         });
+    }
 
 
-        // Set up what happens when an item is clicked - an edit popup appears where the user can
-        // edit the text.
-        final EditCategoryActivity this_ = this;
-        // Create a message handling object as an anonymous class.
-        AdapterView.OnItemClickListener listClickedHandler = new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView parent, View v, int position, long id) {
-                // In response to the click, start edit word activity
-                Intent intent = new Intent(this_, EditPairActivity.class);
-                intent.putExtra(EditPairActivity.EXTRA_LEFT_WORD, mInterleavedWords.get(position - position % 2));
-                intent.putExtra(EditPairActivity.EXTRA_RIGHT_WORD, mInterleavedWords.get(position - position % 2 + 1));
-                intent.putExtra(EditPairActivity.EXTRA_WORD_INDEX, position - position % 2);
-                intent.putExtra(EditPairActivity.EXTRA_ACTIVITY_TITLE, getResources().getString(R.string.edit_word_pair_title));
-
-                startActivityForResult(intent, EDIT_PAIR_REQUEST_CODE);
-
-            }
-        };
-
-        mGridView.setOnItemClickListener(listClickedHandler);
+    @Override
+    public void onItemClick(AdapterView parent, View v, int position, long id) {
+        // In response to the click, start edit word activity
+        mCursor.moveToPosition(position);
+        Intent intent = new Intent(this, EditPairActivity.class);
+        intent.putExtra(EditPairActivity.EXTRA_LEFT_WORD, mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD1)));
+        intent.putExtra(EditPairActivity.EXTRA_RIGHT_WORD, mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD2)));
+        intent.putExtra(EditPairActivity.EXTRA_WORD_INDEX, mCursor.getInt(mCursor.getColumnIndex(WordsContract.Pairs.WORD_PAIR_ID)));
+        intent.putExtra(EditPairActivity.EXTRA_ACTIVITY_TITLE, getResources().getString(R.string.edit_word_pair_title));
+        startActivityForResult(intent, EditCategoryActivity.EDIT_PAIR_REQUEST_CODE);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
-        // Save data to CSV
-        WordsDataSource w = WordsDataSource.getDataSource();
-        w.setInterleavedWordListForCategory(mCategoryName, mInterleavedWords);
-
-        // Save data asynchronously to avoid blocking this thread
-        WordsDataSource.saveAsync();
     }
 
     public void onAddButtonClick(View view) {
         Intent intent = new Intent(this, EditPairActivity.class);
         intent.putExtra(EditPairActivity.EXTRA_LEFT_WORD, getResources().getString(R.string.default_left_word));
         intent.putExtra(EditPairActivity.EXTRA_RIGHT_WORD, getResources().getString(R.string.default_right_word));
-        intent.putExtra(EditPairActivity.EXTRA_WORD_INDEX, mInterleavedWords.size());
+        intent.putExtra(EditPairActivity.EXTRA_WORD_INDEX, mCursor.getCount());
         intent.putExtra(EditPairActivity.EXTRA_ACTIVITY_TITLE, getResources().getString(R.string.add_word_pair_title));
 
         startActivityForResult(intent, ADD_PAIR_REQUEST_CODE);
@@ -171,16 +158,18 @@ public class EditCategoryActivity extends AppCompatActivity {
                     String leftWord = data.getStringExtra(EditPairActivity.EXTRA_LEFT_WORD);
                     String rightWord = data.getStringExtra(EditPairActivity.EXTRA_RIGHT_WORD);
                     int index = data.getIntExtra(EditPairActivity.EXTRA_WORD_INDEX, 0);
-                    mInterleavedWords.set(index, leftWord);
-                    mInterleavedWords.set(index+1, rightWord);
-                    mAdapter.notifyDataSetChanged();
+
+                    WordsDataSource.updatePair(getApplicationContext(), index, leftWord, rightWord);
+                    refreshCursor();
                 }
                 break;
             case ADD_PAIR_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
-                    mInterleavedWords.add(data.getStringExtra(EditPairActivity.EXTRA_LEFT_WORD));
-                    mInterleavedWords.add(data.getStringExtra(EditPairActivity.EXTRA_RIGHT_WORD));
-                    mAdapter.notifyDataSetChanged();
+                    String leftWord = data.getStringExtra(EditPairActivity.EXTRA_LEFT_WORD);
+                    String rightWord = data.getStringExtra(EditPairActivity.EXTRA_RIGHT_WORD);
+
+                    WordsDataSource.addPair(getApplicationContext(), leftWord, rightWord, mCategoryId);
+                    refreshCursor();
                 }
             default:
                 break;

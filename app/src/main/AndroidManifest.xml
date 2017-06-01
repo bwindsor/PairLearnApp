@@ -19,7 +19,7 @@
             android:name=".providers.WordsContentProvider"
             android:authorities="com.github.bwindsor.pairlearnapp.providers.WordsContentProvider"
             android:enabled="true"
-            android:exported="false"
+            android:exported="true"
             android:grantUriPermissions="true">
         </provider>
         <activity

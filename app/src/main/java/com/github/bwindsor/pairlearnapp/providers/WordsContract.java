@@ -13,6 +13,13 @@ public class WordsContract {
     public WordsContract() {
     }
 
+    public static final class PairCategory {
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+                + WordsContentProvider.AUTHORITY + "/"
+                + WordsContentProvider.PAIRS_TABLE_NAME
+                + "" + WordsContentProvider.CATEGORIES_TABLE_NAME);
+    }
+
     public static final class Progress implements BaseColumns {
         private Progress() {}
 
@@ -38,6 +45,7 @@ public class WordsContract {
 
         public static final String CATEGORY_ID = _ID;
         public static final String NAME = "name";
+        public static final String IS_IN_TEST = "is_in_test";
     }
 
     public static final class Pairs implements BaseColumns {
