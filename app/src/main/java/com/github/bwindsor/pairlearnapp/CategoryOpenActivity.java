@@ -3,6 +3,7 @@ package com.github.bwindsor.pairlearnapp;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -36,11 +37,24 @@ public class CategoryOpenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_open);
 
-        // Set up a simple list view with a list of categories
-        ListView lv = (ListView) findViewById(R.id.cat_open_list);
-        Cursor c = WordsDataSource.getCategories(getApplicationContext());
-        mAdapter = new CategoryOpenAdapter(this, c, 0);
-        lv.setAdapter(mAdapter);
+        new LoadCategoriesTask().execute();
+    }
+
+
+    private class LoadCategoriesTask extends AsyncTask<Void, Void, Integer> {
+        private ListView mListView;
+
+        protected Integer doInBackground(Void... x) {
+            // Set up a simple list view with a list of categories
+            mListView = (ListView) findViewById(R.id.cat_open_list);
+            Cursor c = WordsDataSource.getCategories(getApplicationContext());
+            mAdapter = new CategoryOpenAdapter(CategoryOpenActivity.this, c, 0);
+            return 0;
+        }
+
+        protected void onPostExecute(Integer result) {
+            mListView.setAdapter(mAdapter);
+        }
     }
 
     /**
@@ -81,4 +95,5 @@ public class CategoryOpenActivity extends AppCompatActivity {
         }
         dialog.show();
     }
+
 }

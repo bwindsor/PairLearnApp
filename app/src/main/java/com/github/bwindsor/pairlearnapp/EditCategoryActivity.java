@@ -2,6 +2,7 @@ package com.github.bwindsor.pairlearnapp;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.ActionMode;
@@ -30,10 +31,28 @@ public class EditCategoryActivity extends AppCompatActivity implements AdapterVi
     private ListView mListView;
 
     private void refreshCursor() {
-        mCursor = WordsDataSource.getPairs(getApplicationContext(), mCategoryId);
+        mCursor = WordsDataSource.getPairs(this, mCategoryId);
         if (mAdapter != null) {
             mAdapter.changeCursor(mCursor);
             mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private class LoadPairsTask extends AsyncTask<Void, Void, Integer> {
+
+        protected Integer doInBackground(Void... x) {
+            // Display the category name in the activity title
+            Cursor c0 = WordsDataSource.getCategory(EditCategoryActivity.this, mCategoryId);
+            c0.moveToFirst();
+            EditCategoryActivity.this.setTitle(getResources().getString(R.string.edit_category_title) + ": " + c0.getString(c0.getColumnIndex(WordsContract.Categories.NAME)));
+
+            refreshCursor();
+            mAdapter = new EditCategoryAdapter(EditCategoryActivity.this, mCursor, 0);
+            return 0;
+        }
+
+        protected void onPostExecute(Integer result) {
+            mListView.setAdapter(mAdapter);
         }
     }
 
@@ -45,17 +64,11 @@ public class EditCategoryActivity extends AppCompatActivity implements AdapterVi
         Intent intent = getIntent();
         mCategoryId = intent.getIntExtra(EXTRA_CATEGORY_ID, 0);
 
-        // Display the category name in the activity title
-        Cursor c0 = WordsDataSource.getCategory(getApplicationContext(), mCategoryId);
-        c0.moveToFirst();
-        this.setTitle(getResources().getString(R.string.edit_category_title) + ": " + c0.getString(c0.getColumnIndex(WordsContract.Categories.NAME)));
-
         mListView = (ListView) findViewById(R.id.cat_edit_list);
-        refreshCursor();
-        mAdapter = new EditCategoryAdapter(this, mCursor, 0);
-        mListView.setAdapter(mAdapter);
-        mListView.setOnItemClickListener(this);
 
+        new LoadPairsTask().execute();
+
+        mListView.setOnItemClickListener(this);
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             private List<Boolean> mIsSelected;
@@ -159,7 +172,7 @@ public class EditCategoryActivity extends AppCompatActivity implements AdapterVi
                     String rightWord = data.getStringExtra(EditPairActivity.EXTRA_RIGHT_WORD);
                     int index = data.getIntExtra(EditPairActivity.EXTRA_WORD_INDEX, 0);
 
-                    WordsDataSource.updatePair(getApplicationContext(), index, leftWord, rightWord);
+                    WordsDataSource.updatePair(this, index, leftWord, rightWord);
                     refreshCursor();
                 }
                 break;
@@ -168,7 +181,7 @@ public class EditCategoryActivity extends AppCompatActivity implements AdapterVi
                     String leftWord = data.getStringExtra(EditPairActivity.EXTRA_LEFT_WORD);
                     String rightWord = data.getStringExtra(EditPairActivity.EXTRA_RIGHT_WORD);
 
-                    WordsDataSource.addPair(getApplicationContext(), leftWord, rightWord, mCategoryId);
+                    WordsDataSource.addPair(this, leftWord, rightWord, mCategoryId);
                     refreshCursor();
                 }
             default:
