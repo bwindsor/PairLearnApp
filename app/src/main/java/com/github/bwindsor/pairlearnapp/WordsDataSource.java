@@ -44,12 +44,15 @@ public class WordsDataSource {
         return getPairsProgress(context, categoryIds, null);
     }
     public static Cursor getPairs(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder) {
-        return _getPairsProgress(context, categoryIds, isRandomOrder, null);
+        return _getPairsProgress(context, categoryIds, isRandomOrder, null, null);
     }
     public static Cursor getPairsProgress(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder) {
-        return _getPairsProgress(context, categoryIds, isRandomOrder, true);
+        return _getPairsProgress(context, categoryIds, isRandomOrder, true, null);
     }
-    private static Cursor _getPairsProgress(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder, @Nullable Boolean alsoGetProgress) {
+    public static Cursor getPairsProgress(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder, @Nullable Integer maxTimesCorrect) {
+        return _getPairsProgress(context, categoryIds, isRandomOrder, true, maxTimesCorrect);
+    }
+    private static Cursor _getPairsProgress(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder, @Nullable Boolean alsoGetProgress, @Nullable Integer maxTimesCorrect) {
         String whereClause = null;
         String[] whereArgs = null;
         if (categoryIds != null) {
@@ -63,6 +66,14 @@ public class WordsDataSource {
         Uri contentUri = WordsContract.Pairs.CONTENT_URI;
         if (alsoGetProgress != null && alsoGetProgress) {
             contentUri = WordsContract.PairProgress.CONTENT_URI;
+            if (maxTimesCorrect != null) {
+                if (whereClause == null) {
+                    whereClause = "";
+                } else {
+                    whereClause += " AND ";
+                }
+                whereClause += WordsContract.Progress.NUM_CORRECT + "<=" + String.valueOf(maxTimesCorrect);
+            }
         }
 
         return context.getContentResolver().query(

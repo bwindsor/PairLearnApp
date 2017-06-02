@@ -46,4 +46,9 @@
     <string name="saved_selected_categories" translatable="false">com.github.bwindsor.pairlearnapp.saved_selected_categories</string>
     <string name="checkbox_reverse_direction">Reverse test direction</string>
     <string name="saved_reverse_direction" translatable="false">com.github.bwindsor.pairlearnapp.saved_reverse_direction</string>
+    <string name="setup_test_correct_count_text">Correct less than</string>
+    <string name="setup_test_correct_count_text2">times</string>
+    <string name="saved_max_times_correct" translatable="false">com.github.bwindsor.pairlearnapp.saved_max_times_correct</string>
+    <string name="dialog_invalid_times_correct_message">You should be correct less than a positive whole number of times</string>
+    <string name="dialog_invalid_times_correct_title">Invalid times correct limit</string>
 </resources>

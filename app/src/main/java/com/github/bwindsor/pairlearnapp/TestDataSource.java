@@ -50,7 +50,8 @@ public class TestDataSource {
             catIdsInt[i] = catIds.get(i);
         }
         mContext = context;
-        mCursor = WordsDataSource.getPairsProgress(context, catIdsInt, true);
+        int maxCorrect = testConfig.getMaxCorrect();
+        mCursor = WordsDataSource.getPairsProgress(context, catIdsInt, true, maxCorrect);
         mIsReversed = testConfig.getIsRightToLeft();
     }
 
