@@ -1,8 +1,10 @@
 package com.github.bwindsor.pairlearnapp;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.util.Pair;
 import android.util.Log;
 
@@ -14,6 +16,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -25,6 +28,7 @@ import java.util.List;
 public class TestDataSource {
     private Cursor mCursor;
     private boolean mIsReversed;
+    private Context mContext;
 
     public void TestDataSource(){}
 
@@ -45,7 +49,8 @@ public class TestDataSource {
         for (int i = 0; i < catIds.size(); i++) {
             catIdsInt[i] = catIds.get(i);
         }
-        mCursor = WordsDataSource.getPairs(context, catIdsInt, true);
+        mContext = context;
+        mCursor = WordsDataSource.getPairsProgress(context, catIdsInt, true);
         mIsReversed = testConfig.getIsRightToLeft();
     }
 
@@ -59,7 +64,7 @@ public class TestDataSource {
         }
     }
     public Pair<String, String> getCurrentPair() {
-        if (mCursor.isAfterLast() || mCursor.isBeforeFirst()) {
+        if (isCursorOutOfRange()) {
             return null;
         } else if (mIsReversed) {
             return new Pair<>(mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD2)),
@@ -69,21 +74,50 @@ public class TestDataSource {
                     mCursor.getString(mCursor.getColumnIndex(WordsContract.Pairs.WORD2)));
         }
     }
+    public HashMap<String, Integer> getCurrentProgress() {
+        if (isCursorOutOfRange()) {
+            return null;
+        } else {
+            HashMap<String, Integer> h = new HashMap<>();
+            h.put(WordsContract.Progress.NUM_CORRECT, mCursor.getInt(mCursor.getColumnIndex(WordsContract.Progress.NUM_CORRECT)));
+            h.put(WordsContract.Progress.NUM_WRONG, mCursor.getInt(mCursor.getColumnIndex(WordsContract.Progress.NUM_WRONG)));
+            return h;
+        }
+    }
 
     public void reset() {
 
     }
 
     public void markCorrect() {
-
+        if (isCursorOutOfRange()) {
+            return;
+        } else {
+            int progressId = (int)createProgressIfRequired();
+            int numCorrect = mCursor.getInt(mCursor.getColumnIndex(WordsContract.Progress.NUM_CORRECT)) + 1;
+            WordsDataSource.updateProgress(mContext, progressId, numCorrect, null, true);
+        }
     }
 
     public void markWrong() {
-
+        if (isCursorOutOfRange()) {
+            return;
+        } else {
+            int progressId = (int)createProgressIfRequired();
+            int numWrong = mCursor.getInt(mCursor.getColumnIndex(WordsContract.Progress.NUM_WRONG)) + 1;
+            WordsDataSource.updateProgress(mContext, progressId, null, numWrong, false);
+        }
     }
 
-    public boolean trySaveProgress() {
-        return false;
+    private long createProgressIfRequired() {
+        if (mCursor.getString(mCursor.getColumnIndex(WordsContract.PairProgress.ID_PROGRESS)) == null) {
+            Uri uri = WordsDataSource.addProgress(mContext,
+                    mCursor.getInt(mCursor.getColumnIndex(WordsContract.PairProgress.ID_PAIR)));
+            return ContentUris.parseId(uri);
+        }
+        return mCursor.getLong(mCursor.getColumnIndex(WordsContract.PairProgress.ID_PROGRESS));
     }
-
+    private boolean isCursorOutOfRange() {
+        return mCursor==null || mCursor.isAfterLast() || mCursor.isBeforeFirst();
+    }
 }

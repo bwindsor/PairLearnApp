@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.provider.UserDictionary;
 import android.support.annotation.NonNull;
 
 /**
@@ -30,6 +31,7 @@ public class WordsContentProvider extends ContentProvider {
     private static final int PAIRS = 1;
     private static final int CATEGORIES = 4;
     private static final int PROGRESS = 6;
+    private static final int PAIR_PROGRESS = 9;
     private static final int PAIR_CATEGORY = 10;
 
     private DatabaseHelper dbHelper;
@@ -125,27 +127,48 @@ public class WordsContentProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
+        String [] finalProjection;
         switch (sUriMatcher.match(uri)) {
             case PAIRS:
                 qb.setTables(PAIRS_TABLE_NAME);
+                finalProjection = projection;
                 break;
             case PAIR_CATEGORY:
                 qb.setTables(PAIRS_TABLE_NAME + " INNER JOIN " + CATEGORIES_TABLE_NAME + " ON " +
                         PAIRS_TABLE_NAME + "." + WordsContract.Pairs.CATEGORY_ID + " = " +
                         CATEGORIES_TABLE_NAME + "." + WordsContract.Categories.CATEGORY_ID);
+                finalProjection = projection;
+                break;
+            case PAIR_PROGRESS:
+                qb.setTables(PAIRS_TABLE_NAME + " LEFT OUTER JOIN " + PROGRESS_TABLE_NAME + " ON " +
+                        PAIRS_TABLE_NAME + "." + WordsContract.Pairs.WORD_PAIR_ID + " = " +
+                        PROGRESS_TABLE_NAME + "." + WordsContract.Progress.PAIR_ID);
+                if (projection != null) {
+                    finalProjection = new String[projection.length + 2];
+                    for (int i = 0; i < projection.length; i++) {
+                        finalProjection[i] = projection[i];
+                    }
+                } else {
+                    finalProjection = new String[3];
+                    finalProjection[0] = "*";
+                }
+                finalProjection[finalProjection.length-2] = PAIRS_TABLE_NAME + "." + WordsContract.Pairs.WORD_PAIR_ID + " AS " + WordsContract.PairProgress.ID_PAIR;
+                finalProjection[finalProjection.length-1] = PROGRESS_TABLE_NAME + "." + WordsContract.Progress.PROGRESS_ID + " AS " + WordsContract.PairProgress.ID_PROGRESS;
                 break;
             case CATEGORIES:
                 qb.setTables(CATEGORIES_TABLE_NAME);
+                finalProjection = projection;
                 break;
             case PROGRESS:
                 qb.setTables(PROGRESS_TABLE_NAME);
+                finalProjection = projection;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor c = qb.query(db, finalProjection, selection, selectionArgs, null, null, sortOrder);
 
         Context context = getContext();
         if (context != null) {
@@ -192,6 +215,7 @@ public class WordsContentProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, PAIRS_TABLE_NAME, PAIRS);
         sUriMatcher.addURI(AUTHORITY, CATEGORIES_TABLE_NAME, CATEGORIES);
         sUriMatcher.addURI(AUTHORITY, PROGRESS_TABLE_NAME, PROGRESS);
+        sUriMatcher.addURI(AUTHORITY, PAIRS_TABLE_NAME + PROGRESS_TABLE_NAME, PAIR_PROGRESS);
         sUriMatcher.addURI(AUTHORITY, PAIRS_TABLE_NAME + CATEGORIES_TABLE_NAME, PAIR_CATEGORY);
     }
 }

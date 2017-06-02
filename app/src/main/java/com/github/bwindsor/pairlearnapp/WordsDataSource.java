@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.net.Uri;
 import android.provider.UserDictionary;
 import android.support.annotation.Nullable;
 import android.widget.CursorAdapter;
@@ -11,6 +12,7 @@ import android.widget.CursorAdapter;
 import com.github.bwindsor.pairlearnapp.providers.WordsContentProvider;
 import com.github.bwindsor.pairlearnapp.providers.WordsContract;
 
+import java.sql.Date;
 import java.util.List;
 
 /**
@@ -26,14 +28,28 @@ public class WordsDataSource {
     public static Cursor getPairs(Context context) {
         return getPairs(context, null);
     }
+    public static Cursor getPairsProgress(Context context) {
+        return getPairsProgress(context, null);
+    }
     public static Cursor getPairs(Context context, int categoryId) {
         return getPairs(context, new int[] {categoryId});
+    }
+    public static Cursor getPairsProgress(Context context, int categoryId) {
+        return getPairsProgress(context, new int[] {categoryId});
     }
     public static Cursor getPairs(Context context, @Nullable int[] categoryIds) {
         return getPairs(context, categoryIds, null);
     }
+    public static Cursor getPairsProgress(Context context, @Nullable int[] categoryIds) {
+        return getPairsProgress(context, categoryIds, null);
+    }
     public static Cursor getPairs(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder) {
-        String[] projection = {WordsContract.Pairs.WORD_PAIR_ID, WordsContract.Pairs.WORD1, WordsContract.Pairs.WORD2};
+        return _getPairsProgress(context, categoryIds, isRandomOrder, null);
+    }
+    public static Cursor getPairsProgress(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder) {
+        return _getPairsProgress(context, categoryIds, isRandomOrder, true);
+    }
+    private static Cursor _getPairsProgress(Context context, @Nullable int[] categoryIds, @Nullable Boolean isRandomOrder, @Nullable Boolean alsoGetProgress) {
         String whereClause = null;
         String[] whereArgs = null;
         if (categoryIds != null) {
@@ -44,8 +60,17 @@ public class WordsDataSource {
         if (isRandomOrder != null && isRandomOrder) {
             orderClause = "RANDOM()";
         }
-        return context.getContentResolver().query(WordsContract.Pairs.CONTENT_URI, projection,
-                whereClause, whereArgs, orderClause);
+        Uri contentUri = WordsContract.Pairs.CONTENT_URI;
+        if (alsoGetProgress != null && alsoGetProgress) {
+            contentUri = WordsContract.PairProgress.CONTENT_URI;
+        }
+
+        return context.getContentResolver().query(
+                contentUri,
+                null,
+                whereClause,
+                whereArgs,
+                orderClause);
     }
 
     public static void addPair(Context context, String leftWord, String rightWord, int categoryId) {
@@ -130,11 +155,32 @@ public class WordsDataSource {
         return context.getContentResolver().query(WordsContract.Progress.CONTENT_URI, projection,
                 whereClause, whereArgs, null);
     }
-    public static void addProgress(Context context, int pairId) {
-
+    public static Uri addProgress(Context context, int pairId) {
+        ContentValues values = new ContentValues();
+        values.put(WordsContract.Progress.PAIR_ID, pairId);
+        values.put(WordsContract.Progress.NUM_CORRECT, 0);
+        values.put(WordsContract.Progress.NUM_WRONG, 0);
+        values.put(WordsContract.Progress.UNIX_TIME_LAST_CORRECT, 0);
+        return context.getContentResolver().insert(WordsContract.Progress.CONTENT_URI, values);
     }
-    public static void updateProgress(Context context, int progressId, int numCorrect, int numWrong, boolean isCorrect) {
-
+    public static void updateProgress(Context context, int progressId,
+                                      @Nullable Integer numCorrect, @Nullable Integer numWrong,
+                                      @Nullable Boolean updateCorrectTime) {
+        ContentValues values = new ContentValues();
+        if (numCorrect != null) {
+            values.put(WordsContract.Progress.NUM_CORRECT, numCorrect);
+        }
+        if (numWrong != null) {
+            values.put(WordsContract.Progress.NUM_WRONG, numWrong);
+        }
+        if (updateCorrectTime != null) {
+            values.put(WordsContract.Progress.UNIX_TIME_LAST_CORRECT, (int)(System.currentTimeMillis()/1000));
+        }
+        context.getContentResolver().update(WordsContract.Progress.CONTENT_URI,
+                values,
+                WordsContract.Progress.PROGRESS_ID + "=?",
+                new String[] {String.valueOf(progressId)}
+        );
     }
 
     private static String makeInClause(int length) {

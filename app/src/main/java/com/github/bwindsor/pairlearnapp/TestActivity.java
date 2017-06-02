@@ -8,7 +8,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
+import com.github.bwindsor.pairlearnapp.providers.WordsContract;
+
+import org.w3c.dom.Text;
+
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Timer;
 
 public class TestActivity extends AppCompatActivity implements QuestionFragment.OnQuestionFinishedListener, AnswerFragment.OnAnswerButtonPressedListener {
@@ -19,6 +26,8 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
 
     private TestDataSource mTestDataSource;
     private float mTimeLimitSeconds;
+    private TextView mCorrectTextView;
+    private TextView mWrongTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +40,10 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
                 intent.getBooleanExtra(EXTRA_LEFT_TO_RIGHT, false)
         );
 
+        // Store UI components
+        mCorrectTextView = (TextView) findViewById(R.id.test_display_correct);
+        mWrongTextView = (TextView) findViewById(R.id.test_display_wrong);
+
         // Create the data source
         mTimeLimitSeconds = intent.getFloatExtra(EXTRA_QUESTION_TIMEOUT, 3);
 
@@ -42,6 +55,8 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
             showNoWordsDialogThenFinish();
             return;
         }
+
+        showProgress();
 
         // Create a new Fragment to be placed in the activity layout
         QuestionFragment firstFragment = QuestionFragment.newInstance(p.first,this.mTimeLimitSeconds);
@@ -59,6 +74,14 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
         transaction.commit();
     }
 
+    private void showProgress() {
+        HashMap<String,Integer> p = mTestDataSource.getCurrentProgress();
+        if (p == null) { return; }
+
+        mCorrectTextView.setText(String.format(Locale.ROOT,  "+%d", p.get(WordsContract.Progress.NUM_CORRECT)));
+        mWrongTextView.setText(String.format(Locale.ROOT, "-%d", p.get(WordsContract.Progress.NUM_WRONG)));
+    }
+
     private void switchToNextQuestion() {
         Pair<String, String> p = mTestDataSource.getNextPair();
         if (p == null) {
@@ -69,6 +92,7 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.test_fragment_container, newFragment);
         transaction.commit();
+        showProgress();
     }
 
     public void onTestFinished() {
@@ -82,9 +106,11 @@ public class TestActivity extends AppCompatActivity implements QuestionFragment.
     public void onContinueClicked(View view) { this.switchToAnswer(); }
 
     public void onCorrectButtonPressed(View view) {
+        mTestDataSource.markCorrect();
         this.switchToNextQuestion();
     }
     public void onWrongButtonPressed(View view) {
+        mTestDataSource.markWrong();
         this.switchToNextQuestion();
     }
 

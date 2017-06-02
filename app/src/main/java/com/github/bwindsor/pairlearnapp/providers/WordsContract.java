@@ -17,7 +17,16 @@ public class WordsContract {
         public static final Uri CONTENT_URI = Uri.parse("content://"
                 + WordsContentProvider.AUTHORITY + "/"
                 + WordsContentProvider.PAIRS_TABLE_NAME
-                + "" + WordsContentProvider.CATEGORIES_TABLE_NAME);
+                + WordsContentProvider.CATEGORIES_TABLE_NAME);
+    }
+
+    public static final class PairProgress {
+        public static final Uri CONTENT_URI = Uri.parse("content://"
+                + WordsContentProvider.AUTHORITY + "/"
+                + WordsContentProvider.PAIRS_TABLE_NAME
+                + WordsContentProvider.PROGRESS_TABLE_NAME);
+        public static final String ID_PAIR = "_id_pair";
+        public static final String ID_PROGRESS = "_id_progress";
     }
 
     public static final class Progress implements BaseColumns {
