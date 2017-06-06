@@ -72,7 +72,8 @@ public class WordsDataSource {
                 } else {
                     whereClause += " AND ";
                 }
-                whereClause += WordsContract.Progress.NUM_CORRECT + "<=" + String.valueOf(maxTimesCorrect);
+                whereClause += "(" + WordsContract.Progress.NUM_CORRECT + "<=" + String.valueOf(maxTimesCorrect)
+                                + " OR " + WordsContract.Progress.NUM_CORRECT + " IS NULL" + ")";
             }
         }
 
